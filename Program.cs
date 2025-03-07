@@ -1,5 +1,10 @@
-var builder = WebApplication.CreateBuilder(args);
+using hotel_be.ModelFromDB;
+using Microsoft.EntityFrameworkCore;
+using hotel_be.ModelFromDB;
 
+var builder = WebApplication.CreateBuilder(args);
+string Emuach = builder.Configuration.GetConnectionString("emuach");
+builder.Services.AddDbContext<DBCnhom4>(options => options.UseSqlServer(Emuach));
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -8,6 +13,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
