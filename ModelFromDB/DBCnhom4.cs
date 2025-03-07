@@ -43,10 +43,6 @@ public partial class DBCnhom4 : DbContext
 
     public virtual DbSet<TblServiceGood> TblServiceGoods { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=cmcsv.ric.vn,10000;Initial Catalog=N9_NHOM4;Persist Security Info=True;User ID=cmcsv;Password=cM!@#2025;Encrypt=false;");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<TblBooking>(entity =>
