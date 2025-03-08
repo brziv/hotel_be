@@ -49,33 +49,41 @@ namespace hotel_be.Controllers
 
         [HttpPut]
         [Route("UpdateTblGuest")]
-        public ActionResult Sua(Guid gGuestId, string gFirstName, string gLastName, string? gEmail, string gPhoneNumber)
+        public ActionResult Sua([FromBody] TblGuest updatedGuest)
         {
-            TblGuest Guest = new TblGuest
+            var existingGuest = dbc.TblGuests.Find(updatedGuest.GGuestId);
+            if (existingGuest == null)
             {
-                GGuestId = gGuestId,
-                GFirstName = gFirstName,
-                GLastName = gLastName,
-                GEmail = gEmail,
-                GPhoneNumber = gPhoneNumber
-            };
-            dbc.TblGuests.Update(Guest);
+                return NotFound(new { message = "Guest not found" });
+            }
+
+            existingGuest.GFirstName = updatedGuest.GFirstName;
+            existingGuest.GLastName = updatedGuest.GLastName;
+            existingGuest.GEmail = updatedGuest.GEmail;
+            existingGuest.GPhoneNumber = updatedGuest.GPhoneNumber;
+
+            dbc.TblGuests.Update(existingGuest);
             dbc.SaveChanges();
-            return Ok(new { data = Guest });
+
+            return Ok(new { data = existingGuest });
         }
 
         [HttpDelete]
         [Route("XoaTblGuest")]
         public ActionResult Xoa(Guid gGuestId)
         {
-            TblGuest Guest = new TblGuest
-            {
-                GGuestId = gGuestId,
-            };
+            var guest = dbc.TblGuests.Find(gGuestId);
 
-            dbc.TblGuests.Remove(Guest);
+            if (guest == null)
+            {
+                return NotFound(new { message = "Guest not found" });
+            }
+
+            dbc.TblGuests.Remove(guest);
             dbc.SaveChanges();
-            return Ok(new { data = Guest });
+
+            return Ok(new { data = guest });
         }
+
     }
 }
