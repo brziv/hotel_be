@@ -21,12 +21,10 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblServiceGoods.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblServiceGood")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblServiceGoods
                 .Where(item =>
                     item.SgServiceGoodsId.ToString().Contains(s) ||
@@ -41,20 +39,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblServiceGood")]
-        public ActionResult Them(Guid sgServiceGoodsId, Guid sgServiceId, Guid sgGoodsId, int sgQuantity)
+        public ActionResult Them(TblServiceGood serviceGood)
         {
-            TblServiceGood ServiceGood = new TblServiceGood
-            {
-                SgServiceGoodsId = sgServiceGoodsId,
-                SgServiceId = sgServiceId,
-                SgGoodsId = sgGoodsId,
-                SgQuantity = sgQuantity
-            };
-
-            dbc.TblServiceGoods.Add(ServiceGood);
+            dbc.TblServiceGoods.Add(serviceGood);
             dbc.SaveChanges();
 
-            return Ok(new { data = ServiceGood });
+            return Ok(new { data = serviceGood });
         }
 
         [HttpPost]

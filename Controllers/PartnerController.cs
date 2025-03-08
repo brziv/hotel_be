@@ -21,12 +21,10 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblPartners.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblPartner")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblPartners
                 .Where(item =>
                     item.PPartnerId.ToString().Contains(s) ||
@@ -43,22 +41,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblPartner")]
-        public ActionResult Them(Guid pPartnerId, string pPartnerName, string? pPartnerType, string pPhoneNumber, string? pEmail, string? pAddress)
+        public ActionResult Them(TblPartner partner)
         {
-            TblPartner Partner = new TblPartner
-            {
-                PPartnerId = pPartnerId,
-                PPartnerName = pPartnerName,
-                PPartnerType = pPartnerType,
-                PPhoneNumber = pPhoneNumber,
-                PEmail = pEmail,
-                PAddress = pAddress
-            };
-
-            dbc.TblPartners.Add(Partner);
+            dbc.TblPartners.Add(partner);
             dbc.SaveChanges();
 
-            return Ok(new { data = Partner });
+            return Ok(new { data = partner });
         }
 
         [HttpPost]

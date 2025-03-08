@@ -21,21 +21,19 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblEmployees.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblEmployee")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblEmployees
                 .Where(item =>
-                    item.EEmployeeId.ToString().ToLower().Contains(searchTerm) ||
-                    item.EFirstName.ToLower().Contains(searchTerm) ||
-                    item.ELastName.ToLower().Contains(searchTerm) ||
-                    item.EEmail.ToLower().Contains(searchTerm) ||
-                    (item.EPhoneNumber != null && item.EPhoneNumber.ToLower().Contains(searchTerm)) ||
-                    item.EPosition.ToLower().Contains(searchTerm) ||
-                    item.ESalary.ToString().Contains(searchTerm)
+                    item.EEmployeeId.ToString().ToLower().Contains(s) ||
+                    item.EFirstName.ToLower().Contains(s) ||
+                    item.ELastName.ToLower().Contains(s) ||
+                    item.EEmail.ToLower().Contains(s) ||
+                    (item.EPhoneNumber != null && item.EPhoneNumber.ToLower().Contains(s)) ||
+                    item.EPosition.ToLower().Contains(s) ||
+                    item.ESalary.ToString().Contains(s)
                 )
                 .ToList();
 
@@ -44,19 +42,8 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblEmployee")]
-        public ActionResult Them(Guid eEmployeeId, string eFirstName, string eLastName, string eEmail, string? ePhoneNumber, string ePosition, decimal eSalary)
+        public ActionResult Them(TblEmployee employee)
         {
-            TblEmployee employee = new TblEmployee
-            {
-                EEmployeeId = eEmployeeId,
-                EFirstName = eFirstName,
-                ELastName = eLastName,
-                EEmail = eEmail,
-                EPhoneNumber = ePhoneNumber,
-                EPosition = ePosition,
-                ESalary = eSalary
-            };
-
             dbc.TblEmployees.Add(employee);
             dbc.SaveChanges();
 

@@ -21,12 +21,10 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblGoods.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblGood")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblGoods
                 .Where(item =>
                     item.GGoodsId.ToString().Contains(s) ||
@@ -45,24 +43,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblGood")]
-        public ActionResult Them(Guid gGoodsId, string gGoodsName, string? gCategory, int? gQuantity, string? gUnit, decimal gCostPrice, decimal gSellingPrice, string gCurrency)
+        public ActionResult Them(TblGood good)
         {
-            TblGood Good = new TblGood
-            {
-                GGoodsId = gGoodsId,
-                GGoodsName = gGoodsName,
-                GCategory = gCategory,
-                GQuantity = gQuantity,
-                GUnit = gUnit,
-                GCostPrice = gCostPrice,
-                GSellingPrice = gSellingPrice,
-                GCurrency = gCurrency
-            };
-
-            dbc.TblGoods.Add(Good);
+            dbc.TblGoods.Add(good);
             dbc.SaveChanges();
 
-            return Ok(new { data = Good });
+            return Ok(new { data = good });
         }
 
         [HttpPost]

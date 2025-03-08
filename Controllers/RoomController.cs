@@ -21,12 +21,10 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblRooms.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblRoom")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblRooms
                 .Where(item =>
                     item.RRoomId.ToString().Contains(s) ||
@@ -43,22 +41,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblRoom")]
-        public ActionResult Them(Guid rRoomId, string rRoomNumber, Guid rFloorId, string rRoomType, decimal rPricePerHour, string rStatus)
+        public ActionResult Them(TblRoom room)
         {
-            TblRoom Room = new TblRoom
-            {
-                RRoomId = rRoomId,
-                RRoomNumber = rRoomNumber,
-                RFloorId = rFloorId,
-                RRoomType = rRoomType,
-                RPricePerHour = rPricePerHour,
-                RStatus = rStatus
-            };
-
-            dbc.TblRooms.Add(Room);
+            dbc.TblRooms.Add(room);
             dbc.SaveChanges();
 
-            return Ok(new { data = Room });
+            return Ok(new { data = room });
         }
 
         [HttpPost]

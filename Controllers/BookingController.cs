@@ -22,7 +22,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblBookings.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblBooking")]
         public ActionResult TimKiem(string s)
         {
@@ -44,20 +44,8 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblBooking")]
-        public ActionResult Them(Guid bBookingId, Guid bGuestId, DateTime bCheckInDate, DateTime bCheckOutDate, string bBookingStatus, decimal? bTotalMoney, decimal? bDeposit, DateTime? bCreatedAt)
+        public ActionResult Them(TblBooking booking)
         {
-            TblBooking booking = new TblBooking
-            {
-                BBookingId = bBookingId,
-                BGuestId = bGuestId,
-                BCheckInDate = bCheckInDate,
-                BCheckOutDate = bCheckOutDate,
-                BBookingStatus = bBookingStatus,
-                BTotalMoney = bTotalMoney,
-                BDeposit = bDeposit,
-                BCreatedAt = bCreatedAt
-            };
-
             dbc.TblBookings.Add(booking);
             dbc.SaveChanges();
 

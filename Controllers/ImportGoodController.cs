@@ -21,12 +21,10 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblImportGoods.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblImportGood")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblImportGoods
                 .Where(item =>
                     item.IgImportId.ToString().Contains(s) ||
@@ -42,21 +40,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblImportGood")]
-        public ActionResult Them(Guid igImportId, decimal igSumPrice, string igCurrency, DateTime? igImportDate, string? igSupplier)
+        public ActionResult Them(TblImportGood importGood)
         {
-            TblImportGood ImportGood = new TblImportGood
-            {
-                IgImportId = igImportId,
-                IgSumPrice = igSumPrice,
-                IgCurrency = igCurrency,
-                IgImportDate = igImportDate,
-                IgSupplier = igSupplier
-            };
-
-            dbc.TblImportGoods.Add(ImportGood);
+            dbc.TblImportGoods.Add(importGood);
             dbc.SaveChanges();
 
-            return Ok(new { data = ImportGood });
+            return Ok(new { data = importGood });
         }
 
         [HttpPost]
