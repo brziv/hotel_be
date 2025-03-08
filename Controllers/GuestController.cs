@@ -21,15 +21,12 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblGuests.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblGuest")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblGuests
                 .Where(item =>
-                    item.GGuestId.ToString().Contains(s) ||
                     item.GFirstName.Contains(s) ||
                     item.GLastName.Contains(s) ||
                     (item.GEmail != null && item.GEmail.Contains(s)) ||
@@ -42,24 +39,15 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblGuest")]
-        public ActionResult Them(Guid gGuestId, string gFirstName, string gLastName, string? gEmail, string gPhoneNumber)
+        public ActionResult Them(TblGuest guest)
         {
-            TblGuest Guest = new TblGuest
-            {
-                GGuestId = gGuestId,
-                GFirstName = gFirstName,
-                GLastName = gLastName,
-                GEmail = gEmail,
-                GPhoneNumber = gPhoneNumber
-            };
-
-            dbc.TblGuests.Add(Guest);
+            dbc.TblGuests.Add(guest);
             dbc.SaveChanges();
 
-            return Ok(new { data = Guest });
+            return Ok(new { data = guest });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblGuest")]
         public ActionResult Sua(Guid gGuestId, string gFirstName, string gLastName, string? gEmail, string gPhoneNumber)
         {
@@ -76,7 +64,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Guest });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblGuest")]
         public ActionResult Xoa(Guid gGuestId)
         {
