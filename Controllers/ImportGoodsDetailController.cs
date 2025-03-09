@@ -1,6 +1,7 @@
 ﻿using hotel_be.ModelFromDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace hotel_be.Controllers
 {
@@ -19,6 +20,25 @@ namespace hotel_be.Controllers
         public ActionResult Get()
         {
             return Ok(new { data = dbc.TblImportGoodsDetails.ToList() });
+        }
+
+        [HttpGet("GetImportGoodsDetailList/{importId}")]
+        public async Task<IActionResult> GetImportGoodsDetailList(Guid importId)
+        {
+            var details = await dbc.TblImportGoodsDetails
+                .Where(d => d.IgdImportId == importId)
+                .Join(dbc.TblGoods,
+                      detail => detail.IgdGoodsId,
+                      goods => goods.GGoodsId,
+                      (detail, goods) => new
+                      {
+                          GoodsName = goods.GGoodsName,
+                          Quantity = detail.IgdQuantity,
+                          CostPrice = detail.IgdCostPrice
+                      })
+                .ToListAsync();
+
+            return Ok(new { data = details });
         }
 
         [HttpGet]
