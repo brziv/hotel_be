@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblServices.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblService")]
         public ActionResult TimKiem(string s)
         {
@@ -57,7 +57,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Service });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblService")]
         public ActionResult Sua(Guid sServiceId, string sServiceName, decimal sServiceCostPrice, decimal sServiceSellPrice)
         {
@@ -73,7 +73,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Service });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblService")]
         public ActionResult Xoa(Guid sServiceId)
         {

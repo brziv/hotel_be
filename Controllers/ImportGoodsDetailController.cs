@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblImportGoodsDetails.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblImportGoodsDetail")]
         public ActionResult TimKiem(string s)
         {
@@ -59,7 +59,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = ImportGoodsDetail });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblImportGoodsDetail")]
         public ActionResult Sua(Guid igdId, Guid igdImportId, Guid igdGoodsId, int igdQuantity, decimal igdCostPrice)
         {
@@ -76,7 +76,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = ImportGoodsDetail });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblImportGoodsDetail")]
         public ActionResult Xoa(Guid igdId)
         {

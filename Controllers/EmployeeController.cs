@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblEmployees.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblEmployee")]
         public ActionResult TimKiem(string s)
         {
@@ -63,7 +63,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = employee });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblEmployee")]
         public ActionResult Update(Guid eEmployeeId, string eFirstName, string eLastName, string eEmail, string? ePhoneNumber, string ePosition, decimal eSalary)
         {
@@ -82,7 +82,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = employee });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblEmployee")]
         public ActionResult Xoa(Guid eEmployeeId)
         {

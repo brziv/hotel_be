@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblBookingServices.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblBookingService")]
         public ActionResult SearchTblBookingService(string s)
         {
@@ -57,7 +57,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = bookingService });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblBookingService")]
         public ActionResult Sua(Guid bsBookingServicesId, Guid bsBookingId, Guid bsServiceId, int bsQuantity, DateTime? bsCreatedAt)
         {
@@ -77,7 +77,7 @@ namespace hotel_be.Controllers
         }
 
 
-        [HttpPost]
+        [HttpDelete]
         [Route("DeleteTblBookingService")]
         public ActionResult Xoa(Guid bsBookingServicesId)
         {

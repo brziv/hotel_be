@@ -59,7 +59,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Payment });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblPayment")]
         public ActionResult Sua(Guid pPaymentId, Guid pBookingId, decimal pAmountPaid, string pPaymentMethod, DateTime? pPaymentDate)
         {
@@ -76,7 +76,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Payment });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblPayment")]
         public ActionResult Xoa(Guid pPaymentId)
         {

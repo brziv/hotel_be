@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblBookingRooms.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblBookingRoom")]
         public ActionResult TimKiem(string s)
         {
@@ -54,7 +54,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = bookingRoom });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblBookingRoom")]
         public ActionResult Sua(Guid brBookingRoomsId, Guid brBookingId, Guid brRoomId)
         {
@@ -71,7 +71,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = bookingRoom });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("DeleteTblBookingRoom")]
         public ActionResult Xoa(Guid brBookingRoomsId)
         {

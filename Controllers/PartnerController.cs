@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblPartners.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblPartner")]
         public ActionResult TimKiem(string s)
         {
@@ -61,7 +61,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Partner });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblPartner")]
         public ActionResult Sua(Guid pPartnerId, string pPartnerName, string? pPartnerType, string pPhoneNumber, string? pEmail, string? pAddress)
         {
@@ -79,7 +79,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Partner });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblPartner")]
         public ActionResult Xoa(Guid pPartnerId)
         {

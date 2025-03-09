@@ -21,7 +21,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblFloors.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblFloor")]
         public ActionResult TimKiem(string s)
         {
@@ -51,7 +51,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Floor });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblFloor")]
         public ActionResult Them(Guid fFloorId, string fFloor)
         {
@@ -65,7 +65,7 @@ namespace hotel_be.Controllers
             return Ok(new { data = Floor });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("DeleteTblFloor")]
         public ActionResult Xoa(Guid fFloorId)
         {
