@@ -48,35 +48,41 @@ namespace hotel_be.Controllers
             return Ok(new { data = importGood });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblImportGood")]
-        public ActionResult Xoa(Guid igImportId, decimal igSumPrice, string igCurrency, DateTime? igImportDate, string? igSupplier)
+        public ActionResult Sua([FromBody] TblImportGood updatedImportGood)
         {
-            TblImportGood ImportGood = new TblImportGood
+            var existingImportGood = dbc.TblImportGoods.Find(updatedImportGood.IgImportId);
+            if (existingImportGood == null)
             {
-                IgImportId = igImportId,
-                IgSumPrice = igSumPrice,
-                IgCurrency = igCurrency,
-                IgImportDate = igImportDate,
-                IgSupplier = igSupplier
-            };
-            dbc.TblImportGoods.Update(ImportGood);
+                return NotFound(new { message = "Import good not found" });
+            }
+
+            existingImportGood.IgSumPrice = updatedImportGood.IgSumPrice;
+            existingImportGood.IgCurrency = updatedImportGood.IgCurrency;
+            existingImportGood.IgImportDate = updatedImportGood.IgImportDate;
+            existingImportGood.IgSupplier = updatedImportGood.IgSupplier;
+
+            dbc.TblImportGoods.Update(existingImportGood);
             dbc.SaveChanges();
-            return Ok(new { data = ImportGood });
+
+            return Ok(new { data = existingImportGood });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblImportGood")]
         public ActionResult Xoa(Guid igImportId)
         {
-            TblImportGood ImportGood = new TblImportGood
+            var importGood = dbc.TblImportGoods.Find(igImportId);
+            if (importGood == null)
             {
-                IgImportId = igImportId
-            };
+                return NotFound(new { message = "Import good not found" });
+            }
 
-            dbc.TblImportGoods.Remove(ImportGood);
+            dbc.TblImportGoods.Remove(importGood);
             dbc.SaveChanges();
-            return Ok(new { data = ImportGood });
+
+            return Ok(new { data = importGood });
         }
     }
 }

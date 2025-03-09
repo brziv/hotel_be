@@ -51,38 +51,44 @@ namespace hotel_be.Controllers
             return Ok(new { data = good });
         }
 
-        [HttpPost]
+        [HttpPut]
         [Route("UpdateTblGood")]
-        public ActionResult Sua(Guid gGoodsId, string gGoodsName, string? gCategory, int? gQuantity, string? gUnit, decimal gCostPrice, decimal gSellingPrice, string gCurrency)
+        public ActionResult Sua([FromBody] TblGood updatedGood)
         {
-            TblGood Good = new TblGood
+            var existingGood = dbc.TblGoods.Find(updatedGood.GGoodsId);
+            if (existingGood == null)
             {
-                GGoodsId = gGoodsId,
-                GGoodsName = gGoodsName,
-                GCategory = gCategory,
-                GQuantity = gQuantity,
-                GUnit = gUnit,
-                GCostPrice = gCostPrice,
-                GSellingPrice = gSellingPrice,
-                GCurrency = gCurrency
-            };
-            dbc.TblGoods.Update(Good);
+                return NotFound(new { message = "Good not found" });
+            }
+
+            existingGood.GGoodsName = updatedGood.GGoodsName;
+            existingGood.GCategory = updatedGood.GCategory;
+            existingGood.GQuantity = updatedGood.GQuantity;
+            existingGood.GUnit = updatedGood.GUnit;
+            existingGood.GCostPrice = updatedGood.GCostPrice;
+            existingGood.GSellingPrice = updatedGood.GSellingPrice;
+            existingGood.GCurrency = updatedGood.GCurrency;
+
+            dbc.TblGoods.Update(existingGood);
             dbc.SaveChanges();
-            return Ok(new { data = Good });
+
+            return Ok(new { data = existingGood });
         }
 
-        [HttpPost]
+        [HttpDelete]
         [Route("XoaTblGood")]
         public ActionResult Xoa(Guid gGoodsId)
         {
-            TblGood Good = new TblGood
+            var good = dbc.TblGoods.Find(gGoodsId);
+            if (good == null)
             {
-                GGoodsId = gGoodsId
-            };
+                return NotFound(new { message = "Good not found" });
+            }
 
-            dbc.TblGoods.Remove(Good);
+            dbc.TblGoods.Remove(good);
             dbc.SaveChanges();
-            return Ok(new { data = Good });
+
+            return Ok(new { data = good });
         }
     }
 }
