@@ -37,23 +37,17 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblFloor")]
-        public ActionResult Sua(Guid fFloorId, string fFloor)
+        public ActionResult Them(TblFloor floor)
         {
-            TblFloor Floor = new TblFloor
-            {
-                FFloorId = fFloorId,
-                FFloor = fFloor
-            };
-
-            dbc.TblFloors.Add(Floor);
+            dbc.TblFloors.Add(floor);
             dbc.SaveChanges();
 
-            return Ok(new { data = Floor });
+            return Ok(new { data = floor });
         }
 
         [HttpPut]
         [Route("UpdateTblFloor")]
-        public ActionResult Them(Guid fFloorId, string fFloor)
+        public ActionResult Sua(Guid fFloorId, string fFloor)
         {
             TblFloor Floor = new TblFloor
             {

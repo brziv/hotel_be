@@ -21,12 +21,10 @@ namespace hotel_be.Controllers
             return Ok(new { data = dbc.TblPayments.ToList() });
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("SearchTblPayment")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblPayments
                 .Where(item =>
                     item.PPaymentId.ToString().Contains(s) ||
@@ -42,21 +40,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblPayment")]
-        public ActionResult Them(Guid pPaymentId, Guid pBookingId, decimal pAmountPaid, string pPaymentMethod, DateTime? pPaymentDate)
+        public ActionResult Them(TblPayment payment)
         {
-            TblPayment Payment = new TblPayment
-            {
-                PPaymentId = pPaymentId,
-                PBookingId = pBookingId,
-                PAmountPaid = pAmountPaid,
-                PPaymentMethod = pPaymentMethod,
-                PPaymentDate = pPaymentDate
-            };
-
-            dbc.TblPayments.Add(Payment);
+            dbc.TblPayments.Add(payment);
             dbc.SaveChanges();
 
-            return Ok(new { data = Payment });
+            return Ok(new { data = payment });
         }
 
         [HttpPut]

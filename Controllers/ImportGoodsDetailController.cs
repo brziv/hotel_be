@@ -25,8 +25,6 @@ namespace hotel_be.Controllers
         [Route("SearchTblImportGoodsDetail")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblImportGoodsDetails
                 .Where(item =>
                     item.IgdId.ToString().Contains(s) ||
@@ -42,52 +40,49 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblImportGoodsDetail")]
-        public ActionResult Them(Guid igdId, Guid igdImportId, Guid igdGoodsId, int igdQuantity, decimal igdCostPrice)
+        public ActionResult Them(TblImportGoodsDetail importGoodsDetail)
         {
-            TblImportGoodsDetail ImportGoodsDetail = new TblImportGoodsDetail
-            {
-                IgdId = igdId,
-                IgdImportId = igdImportId,
-                IgdGoodsId = igdGoodsId,
-                IgdQuantity = igdQuantity,
-                IgdCostPrice = igdCostPrice
-            };
-
-            dbc.TblImportGoodsDetails.Add(ImportGoodsDetail);
+            dbc.TblImportGoodsDetails.Add(importGoodsDetail);
             dbc.SaveChanges();
 
-            return Ok(new { data = ImportGoodsDetail });
+            return Ok(new { data = importGoodsDetail });
         }
 
         [HttpPut]
         [Route("UpdateTblImportGoodsDetail")]
-        public ActionResult Sua(Guid igdId, Guid igdImportId, Guid igdGoodsId, int igdQuantity, decimal igdCostPrice)
+        public ActionResult Sua([FromBody] TblImportGoodsDetail updatedImportGoodsDetail)
         {
-            TblImportGoodsDetail ImportGoodsDetail = new TblImportGoodsDetail
+            var existingImportGoodsDetail = dbc.TblImportGoodsDetails.Find(updatedImportGoodsDetail.IgdId);
+            if (existingImportGoodsDetail == null)
             {
-                IgdId = igdId,
-                IgdImportId = igdImportId,
-                IgdGoodsId = igdGoodsId,
-                IgdQuantity = igdQuantity,
-                IgdCostPrice = igdCostPrice
-            };
-            dbc.TblImportGoodsDetails.Update(ImportGoodsDetail);
+                return NotFound(new { message = "Import goods detail not found" });
+            }
+
+            existingImportGoodsDetail.IgdImportId = updatedImportGoodsDetail.IgdImportId;
+            existingImportGoodsDetail.IgdGoodsId = updatedImportGoodsDetail.IgdGoodsId;
+            existingImportGoodsDetail.IgdQuantity = updatedImportGoodsDetail.IgdQuantity;
+            existingImportGoodsDetail.IgdCostPrice = updatedImportGoodsDetail.IgdCostPrice;
+
+            dbc.TblImportGoodsDetails.Update(existingImportGoodsDetail);
             dbc.SaveChanges();
-            return Ok(new { data = ImportGoodsDetail });
+
+            return Ok(new { data = existingImportGoodsDetail });
         }
 
         [HttpDelete]
         [Route("XoaTblImportGoodsDetail")]
         public ActionResult Xoa(Guid igdId)
         {
-            TblImportGoodsDetail ImportGoodsDetail = new TblImportGoodsDetail
+            var importGoodsDetail = dbc.TblImportGoodsDetails.Find(igdId);
+            if (importGoodsDetail == null)
             {
-                IgdId = igdId,
-            };
+                return NotFound(new { message = "Import goods detail not found" });
+            }
 
-            dbc.TblImportGoodsDetails.Remove(ImportGoodsDetail);
+            dbc.TblImportGoodsDetails.Remove(importGoodsDetail);
             dbc.SaveChanges();
-            return Ok(new { data = ImportGoodsDetail });
+
+            return Ok(new { data = importGoodsDetail });
         }
     }
 }

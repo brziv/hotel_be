@@ -25,8 +25,6 @@ namespace hotel_be.Controllers
         [Route("SearchTblService")]
         public ActionResult TimKiem(string s)
         {
-            string searchTerm = s.ToLower();
-
             var results = dbc.TblServices
                 .Where(item =>
                     item.SServiceId.ToString().Contains(s) ||
@@ -41,20 +39,12 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblService")]
-        public ActionResult Them(Guid sServiceId, string sServiceName, decimal sServiceCostPrice, decimal sServiceSellPrice)
+        public ActionResult Them(TblService service)
         {
-            TblService Service = new TblService
-            {
-                SServiceId = sServiceId,
-                SServiceName = sServiceName,
-                SServiceCostPrice = sServiceCostPrice,
-                SServiceSellPrice = sServiceSellPrice
-            };
-
-            dbc.TblServices.Add(Service);
+            dbc.TblServices.Add(service);
             dbc.SaveChanges();
 
-            return Ok(new { data = Service });
+            return Ok(new { data = service });
         }
 
         [HttpPut]

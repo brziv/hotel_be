@@ -39,15 +39,8 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblBookingRoom")]
-        public ActionResult Them(Guid brBookingRoomsId, Guid brBookingId, Guid brRoomId)
+        public ActionResult Them(TblBookingRoom bookingRoom)
         {
-            TblBookingRoom bookingRoom = new TblBookingRoom
-            {
-                BrBookingRoomsId = brBookingRoomsId,
-                BrBookingId = brBookingId,
-                BrRoomId = brRoomId
-            };
-
             dbc.TblBookingRooms.Add(bookingRoom);
             dbc.SaveChanges();
 
