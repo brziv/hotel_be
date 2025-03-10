@@ -19,6 +19,12 @@ public partial class TblBookingRoom
     [Column("br_RoomID")]
     public Guid BrRoomId { get; set; }
 
+    [Column("b_CheckInDate", TypeName = "datetime")]
+    public DateTime BCheckInDate { get; set; }
+
+    [Column("b_CheckOutDate", TypeName = "datetime")]
+    public DateTime BCheckOutDate { get; set; }
+
     [ForeignKey("BrBookingId")]
     [InverseProperty("TblBookingRooms")]
     public virtual TblBooking BrBooking { get; set; } = null!;

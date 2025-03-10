@@ -47,7 +47,7 @@ public partial class DBCnhom4 : DbContext
     {
         modelBuilder.Entity<TblBooking>(entity =>
         {
-            entity.HasKey(e => e.BBookingId).HasName("PK__tbl_Book__63A3285106E60874");
+            entity.HasKey(e => e.BBookingId).HasName("PK__tbl_Book__63A328519228D519");
 
             entity.Property(e => e.BBookingId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.BCreatedAt).HasDefaultValueSql("(getdate())");
@@ -55,38 +55,38 @@ public partial class DBCnhom4 : DbContext
 
             entity.HasOne(d => d.BGuest).WithMany(p => p.TblBookings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__tbl_Booki__b_Gue__4460231C");
+                .HasConstraintName("FK__tbl_Booki__b_Gue__7BB05806");
         });
 
         modelBuilder.Entity<TblBookingRoom>(entity =>
         {
-            entity.HasKey(e => e.BrBookingRoomsId).HasName("PK__tbl_Book__0D1D3016E66847B1");
+            entity.HasKey(e => e.BrBookingRoomsId).HasName("PK__tbl_Book__0D1D3016859B4CCE");
 
             entity.Property(e => e.BrBookingRoomsId).HasDefaultValueSql("(newid())");
 
             entity.HasOne(d => d.BrBooking).WithMany(p => p.TblBookingRooms)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__tbl_Booki__br_Bo__5F141958");
+                .HasConstraintName("FK__tbl_Booki__br_Bo__04459E07");
 
             entity.HasOne(d => d.BrRoom).WithMany(p => p.TblBookingRooms)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__tbl_Booki__br_Ro__60083D91");
+                .HasConstraintName("FK__tbl_Booki__br_Ro__0539C240");
         });
 
         modelBuilder.Entity<TblBookingService>(entity =>
         {
-            entity.HasKey(e => e.BsBookingServicesId).HasName("PK__tbl_Book__596EDF9908F51794");
+            entity.HasKey(e => e.BsBookingServicesId).HasName("PK__tbl_Book__596EDF990FEA40A2");
 
             entity.Property(e => e.BsBookingServicesId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.BsCreatedAt).HasDefaultValueSql("(getdate())");
 
             entity.HasOne(d => d.BsBooking).WithMany(p => p.TblBookingServices)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__tbl_Booki__bs_Bo__567ED357");
+                .HasConstraintName("FK__tbl_Booki__bs_Bo__0AF29B96");
 
             entity.HasOne(d => d.BsService).WithMany(p => p.TblBookingServices)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__tbl_Booki__bs_Se__5772F790");
+                .HasConstraintName("FK__tbl_Booki__bs_Se__0BE6BFCF");
         });
 
         modelBuilder.Entity<TblEmployee>(entity =>
@@ -150,14 +150,14 @@ public partial class DBCnhom4 : DbContext
 
         modelBuilder.Entity<TblPayment>(entity =>
         {
-            entity.HasKey(e => e.PPaymentId).HasName("PK__tbl_Paym__8C197966241815CE");
+            entity.HasKey(e => e.PPaymentId).HasName("PK__tbl_Paym__8C19796638122A06");
 
             entity.Property(e => e.PPaymentId).HasDefaultValueSql("(newid())");
             entity.Property(e => e.PPaymentDate).HasDefaultValueSql("(getdate())");
 
             entity.HasOne(d => d.PBooking).WithMany(p => p.TblPayments)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK__tbl_Payme__p_Boo__4A18FC72");
+                .HasConstraintName("FK__tbl_Payme__p_Boo__00750D23");
         });
 
         modelBuilder.Entity<TblRoom>(entity =>

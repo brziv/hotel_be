@@ -16,12 +16,6 @@ public partial class TblBooking
     [Column("b_GuestID")]
     public Guid BGuestId { get; set; }
 
-    [Column("b_CheckInDate", TypeName = "datetime")]
-    public DateTime BCheckInDate { get; set; }
-
-    [Column("b_CheckOutDate", TypeName = "datetime")]
-    public DateTime BCheckOutDate { get; set; }
-
     [Column("b_BookingStatus")]
     [StringLength(20)]
     public string BBookingStatus { get; set; } = null!;
