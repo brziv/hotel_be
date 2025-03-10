@@ -30,8 +30,6 @@ namespace hotel_be.Controllers
                 .Where(item =>
                     item.BBookingId.ToString().Contains(s) ||
                     item.BGuestId.ToString().Contains(s) ||
-                    item.BCheckInDate.ToString().Contains(s) ||
-                    item.BCheckOutDate.ToString().Contains(s) ||
                     item.BBookingStatus.Contains(s) ||
                     (item.BTotalMoney.HasValue && item.BTotalMoney.Value.ToString().Contains(s)) ||
                     (item.BDeposit.HasValue && item.BDeposit.Value.ToString().Contains(s)) ||
@@ -54,13 +52,11 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("UpdateTblBooking")]
-        public ActionResult Sua(Guid bBookingId, Guid bGuestId, DateTime bCheckInDate, DateTime bCheckOutDate, string bBookingStatus, decimal? bTotalMoney, decimal? bDeposit, DateTime? bCreatedAt)
+        public ActionResult Sua(Guid bBookingId, Guid bGuestId, string bBookingStatus, decimal? bTotalMoney, decimal? bDeposit, DateTime? bCreatedAt)
         {
             TblBooking booking = new TblBooking
             {
                 BGuestId = bGuestId,
-                BCheckInDate = bCheckInDate,
-                BCheckOutDate = bCheckOutDate,
                 BBookingStatus = bBookingStatus,
                 BTotalMoney = bTotalMoney,
                 BDeposit = bDeposit,

@@ -28,6 +28,8 @@ namespace hotel_be.Controllers
             var results = dbc.TblBookingRooms
                 .Where(item =>
                     item.BrBookingRoomsId.ToString().Contains(s) ||
+                    item.BCheckInDate.ToString().Contains(s) ||
+                    item.BCheckOutDate.ToString().Contains(s) ||
                     item.BrBookingId.ToString().Contains(s) ||
                     item.BrRoomId.ToString().Contains(s)
                 )
@@ -49,13 +51,15 @@ namespace hotel_be.Controllers
 
         [HttpPut]
         [Route("UpdateTblBookingRoom")]
-        public ActionResult Sua(Guid brBookingRoomsId, Guid brBookingId, Guid brRoomId)
+        public ActionResult Sua(Guid brBookingRoomsId, DateTime bCheckInDate, DateTime bCheckOutDate, Guid brBookingId, Guid brRoomId)
         {
             TblBookingRoom bookingRoom = new TblBookingRoom
             {
                 BrBookingRoomsId = brBookingRoomsId,
                 BrBookingId = brBookingId,
-                BrRoomId = brRoomId
+                BrRoomId = brRoomId,
+                BCheckInDate = bCheckInDate,
+                BCheckOutDate = bCheckOutDate,
             };
 
             dbc.TblBookingRooms.Add(bookingRoom);
