@@ -27,9 +27,9 @@ public partial class TblImportGoodsDetail
 
     [ForeignKey("IgdGoodsId")]
     [InverseProperty("TblImportGoodsDetails")]
-    public virtual TblGood IgdGoods { get; set; } = null!;
+    public virtual TblGood? IgdGoods { get; set; }
 
     [ForeignKey("IgdImportId")]
     [InverseProperty("TblImportGoodsDetails")]
-    public virtual TblImportGood IgdImport { get; set; } = null!;
+    public virtual TblImportGood? IgdImport { get; set; }
 }
