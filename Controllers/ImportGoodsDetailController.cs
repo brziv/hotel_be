@@ -76,7 +76,8 @@ namespace hotel_be.Controllers
                     detail.IgdGoodsId,
                     detail.IgdQuantity,
                     detail.IgdCostPrice,
-                    ImportDate = detail.IgdImport != null ? detail.IgdImport.IgImportDate : null
+                    ImportDate = detail.IgdImport != null ? detail.IgdImport.IgImportDate : null,
+                    Supplier = detail.IgdImport != null ? detail.IgdImport.IgSupplier : null
                 })
                 .ToList();
 

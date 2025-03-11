@@ -19,10 +19,10 @@ public partial class TblBookingRoom
     [Column("br_RoomID")]
     public Guid BrRoomId { get; set; }
 
-    [Column("b_CheckInDate", TypeName = "datetime")]
+    [Column("br_CheckInDate", TypeName = "datetime")]
     public DateTime BrCheckInDate { get; set; }
 
-    [Column("b_CheckOutDate", TypeName = "datetime")]
+    [Column("br_CheckOutDate", TypeName = "datetime")]
     public DateTime BrCheckOutDate { get; set; }
 
     [ForeignKey("BrBookingId")]

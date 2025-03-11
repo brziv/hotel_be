@@ -245,7 +245,6 @@ namespace hotel_be.Controllers
                     };
 
                     dbc.TblBookings.Add(bb);
-                    dbc.SaveChanges();
 
                     decimal totalMoney = 0;
                     var roomIds = request.BRdto.Select(r => r.RoomId).ToList();
@@ -261,6 +260,11 @@ namespace hotel_be.Controllers
                     {
                         var room = rooms.First(r => r.RRoomId == roomDto.RoomId);
                         double totalHours = Math.Ceiling((roomDto.CheckOutDate - roomDto.CheckInDate).TotalHours);
+                        if (totalHours <= 0)
+                        {
+                            transaction.Rollback();
+                            return BadRequest(new { error = "Check-out date must be after check-in date" });
+                        }
                         decimal roomCost = (decimal)totalHours * room.RPricePerHour;
                         totalMoney += roomCost;
 
@@ -311,7 +315,6 @@ namespace hotel_be.Controllers
                 };
 
                 dbc.TblBookings.Add(bb);
-                dbc.SaveChanges();
 
                 decimal totalMoney = 0;
                 foreach (var roomDto in request.BRdto)
@@ -324,6 +327,11 @@ namespace hotel_be.Controllers
                     }
 
                     double totalHours = Math.Ceiling((roomDto.CheckOutDate - roomDto.CheckInDate).TotalHours);
+                    if (totalHours <= 0)
+                    {
+                        transaction.Rollback();
+                        return BadRequest(new { error = "Check-out date must be after check-in date" });
+                    }
                     decimal roomCost = (decimal)totalHours * room.RPricePerHour;
                     totalMoney += roomCost;
 
