@@ -27,7 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblFloors
                 .Where(item =>
-                    item.FFloorId.ToString().Contains(s) ||
                     item.FFloor.Contains(s)
                 )
                 .ToList();

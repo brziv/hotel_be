@@ -27,7 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblPartners
                 .Where(item =>
-                    item.PPartnerId.ToString().Contains(s) ||
                     item.PPartnerName.Contains(s) ||
                     (item.PPartnerType != null && item.PPartnerType.Contains(s)) ||
                     item.PPhoneNumber.Contains(s) ||

@@ -27,8 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblPayments
                 .Where(item =>
-                    item.PPaymentId.ToString().Contains(s) ||
-                    item.PBookingId.ToString().Contains(s) ||
                     item.PAmountPaid.ToString().Contains(s) ||
                     item.PPaymentMethod.Contains(s) ||
                     (item.PPaymentDate.HasValue && item.PPaymentDate.Value.ToString().Contains(s))

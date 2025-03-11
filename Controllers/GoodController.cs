@@ -27,7 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblGoods
                 .Where(item =>
-                    item.GGoodsId.ToString().Contains(s) ||
                     item.GGoodsName.Contains(s) ||
                     (item.GCategory != null && item.GCategory.Contains(s)) ||
                     (item.GQuantity.HasValue && item.GQuantity.Value.ToString().Contains(s)) ||

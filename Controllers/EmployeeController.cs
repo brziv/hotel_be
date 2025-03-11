@@ -27,7 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblEmployees
                 .Where(item =>
-                    item.EEmployeeId.ToString().ToLower().Contains(s) ||
                     item.EFirstName.ToLower().Contains(s) ||
                     item.ELastName.ToLower().Contains(s) ||
                     item.EEmail.ToLower().Contains(s) ||

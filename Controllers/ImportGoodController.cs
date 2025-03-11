@@ -27,7 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblImportGoods
                 .Where(item =>
-                    item.IgImportId.ToString().Contains(s) ||
                     item.IgSumPrice.ToString().Contains(s) ||
                     item.IgCurrency.Contains(s) ||
                     (item.IgImportDate.HasValue && item.IgImportDate.Value.ToString().Contains(s)) ||

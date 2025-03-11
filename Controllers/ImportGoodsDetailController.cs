@@ -14,16 +14,39 @@ namespace hotel_be.Controllers
         {
             dbc = dbc_in;
         }
+        public class ImportGoodsDetailDto
+        {
+            public Guid IgdId { get; set; }
+            public int IgdQuantity { get; set; }
+            public decimal IgdCostPrice { get; set; }
+            public string? GoodsName { get; set; }
+            public string? Supplier { get; set; }
+            public DateTime? ImportDate { get; set; }
+        }
 
         [HttpGet]
         [Route("GetImportGoodsDetailList")]
         public ActionResult Get()
         {
-            return Ok(new { data = dbc.TblImportGoodsDetails.ToList() });
+            var importDetails = dbc.TblImportGoodsDetails
+                .Include(igd => igd.IgdGoods)
+                .Include(igd => igd.IgdImport)
+                .Select(igd => new ImportGoodsDetailDto
+                {
+                    IgdId = igd.IgdId,
+                    IgdQuantity = igd.IgdQuantity,
+                    IgdCostPrice = igd.IgdCostPrice,
+                    GoodsName = igd.IgdGoods.GGoodsName,
+                    Supplier = igd.IgdImport.IgSupplier,
+                    ImportDate = igd.IgdImport.IgImportDate
+                })
+                .ToList();
+
+            return Ok(new { data = importDetails });
         }
 
-        [HttpGet("GetImportGoodsDetailList/{importId}")]
-        public async Task<IActionResult> GetImportGoodsDetailList(Guid importId)
+        [HttpGet("GetImportGoodsDetailListByImport/{importId}")]
+        public async Task<IActionResult> GetImport(Guid importId)
         {
             var details = await dbc.TblImportGoodsDetails
                 .Where(d => d.IgdImportId == importId)
@@ -42,14 +65,35 @@ namespace hotel_be.Controllers
         }
 
         [HttpGet]
+        [Route("GetImportGoodsDetailListByGood/{goodID}")]
+        public ActionResult GetGood(Guid goodID)
+        {
+            var details = dbc.TblImportGoodsDetails
+                .Where(detail => detail.IgdGoodsId == goodID)
+                .Select(detail => new {
+                    detail.IgdId,
+                    detail.IgdImportId,
+                    detail.IgdGoodsId,
+                    detail.IgdQuantity,
+                    detail.IgdCostPrice,
+                    ImportDate = detail.IgdImport != null ? detail.IgdImport.IgImportDate : null
+                })
+                .ToList();
+
+            if (details == null || details.Count == 0)
+            {
+                return NotFound(new { message = "No import goods details found for the given GoodID." });
+            }
+
+            return Ok(new { data = details });
+        }
+
+        [HttpGet]
         [Route("SearchTblImportGoodsDetail")]
         public ActionResult TimKiem(string s)
         {
             var results = dbc.TblImportGoodsDetails
                 .Where(item =>
-                    item.IgdId.ToString().Contains(s) ||
-                    item.IgdImportId.ToString().Contains(s) ||
-                    item.IgdGoodsId.ToString().Contains(s) ||
                     item.IgdQuantity.ToString().Contains(s) ||
                     item.IgdCostPrice.ToString().Contains(s)
                 )

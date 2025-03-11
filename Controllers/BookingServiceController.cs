@@ -27,9 +27,6 @@ namespace hotel_be.Controllers
         {
             var results = dbc.TblBookingServices
                 .Where(item =>
-                    item.BsBookingServicesId.ToString().Contains(s) ||
-                    item.BsBookingId.ToString().Contains(s) ||
-                    item.BsServiceId.ToString().Contains(s) ||
                     item.BsQuantity.ToString().Contains(s) ||
                     (item.BsCreatedAt.HasValue && item.BsCreatedAt.Value.ToString().Contains(s))
                 )

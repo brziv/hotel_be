@@ -1,6 +1,5 @@
 using hotel_be.ModelFromDB;
 using Microsoft.EntityFrameworkCore;
-using hotel_be.ModelFromDB;
 
 var builder = WebApplication.CreateBuilder(args);
 string Emuach = builder.Configuration.GetConnectionString("emuach");
