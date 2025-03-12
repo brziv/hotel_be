@@ -52,9 +52,9 @@ namespace hotel_be.Controllers
 
         [HttpPut]
         [Route("UpdateTblGood")]
-        public ActionResult Sua([FromBody] TblGood updatedGood)
+        public async Task<ActionResult> Sua([FromBody] TblGood updatedGood)
         {
-            var existingGood = dbc.TblGoods.Find(updatedGood.GGoodsId);
+            var existingGood = await dbc.TblGoods.FindAsync(updatedGood.GGoodsId);
             if (existingGood == null)
             {
                 return NotFound(new { message = "Good not found" });

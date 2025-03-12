@@ -48,20 +48,34 @@ namespace hotel_be.Controllers
         [HttpGet("GetImportGoodsDetailListByImport/{importId}")]
         public async Task<IActionResult> GetImport(Guid importId)
         {
-            var details = await dbc.TblImportGoodsDetails
-                .Where(d => d.IgdImportId == importId)
-                .Join(dbc.TblGoods,
-                      detail => detail.IgdGoodsId,
-                      goods => goods.GGoodsId,
-                      (detail, goods) => new
-                      {
-                          GoodsName = goods.GGoodsName,
-                          Quantity = detail.IgdQuantity,
-                          CostPrice = detail.IgdCostPrice
-                      })
-                .ToListAsync();
+            try
+            {
+                var details = await dbc.TblImportGoodsDetails
+                    .Where(d => d.IgdImportId == importId)
+                    .Join(dbc.TblGoods,
+                          detail => detail.IgdGoodsId,
+                          goods => goods.GGoodsId,
+                          (detail, goods) => new
+                          {
+                              igdId = detail.IgdId,
+                              igdGoodsId = detail.IgdGoodsId, // Added for quantity updates
+                              goodsName = goods.GGoodsName,
+                              igdQuantity = detail.IgdQuantity,
+                              igdCostPrice = detail.IgdCostPrice
+                          })
+                    .ToListAsync();
 
-            return Ok(new { data = details });
+                if (details == null || !details.Any())
+                {
+                    return NotFound(new { message = $"No details found for import ID {importId}" });
+                }
+
+                return Ok(new { data = details });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching import details", error = ex.Message });
+            }
         }
 
         [HttpGet]

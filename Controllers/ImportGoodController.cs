@@ -39,49 +39,72 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblImportGood")]
-        public ActionResult Them(TblImportGood importGood)
+        public async Task<ActionResult> Them(TblImportGood importGood)
         {
-            dbc.TblImportGoods.Add(importGood);
-            dbc.SaveChanges();
-
-            return Ok(new { data = importGood });
+            try
+            {
+                dbc.TblImportGoods.Add(importGood);
+                await dbc.SaveChangesAsync();
+                return Ok(new { data = importGood });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut]
         [Route("UpdateTblImportGood")]
-        public ActionResult Sua([FromBody] TblImportGood updatedImportGood)
+        public async Task<ActionResult> Sua([FromBody] TblImportGood updatedImportGood)
         {
-            var existingImportGood = dbc.TblImportGoods.Find(updatedImportGood.IgImportId);
-            if (existingImportGood == null)
+            try
             {
-                return NotFound(new { message = "Import good not found" });
+                var existingImportGood = await dbc.TblImportGoods.FindAsync(updatedImportGood.IgImportId);
+                if (existingImportGood == null)
+                {
+                    return NotFound(new { message = "Import good not found" });
+                }
+
+                existingImportGood.IgSumPrice = updatedImportGood.IgSumPrice;
+                existingImportGood.IgCurrency = updatedImportGood.IgCurrency;
+                existingImportGood.IgImportDate = updatedImportGood.IgImportDate;
+                existingImportGood.IgSupplier = updatedImportGood.IgSupplier;
+
+                dbc.TblImportGoods.Update(existingImportGood);
+                await dbc.SaveChangesAsync();
+
+                return Ok(new { data = existingImportGood });
             }
-
-            existingImportGood.IgSumPrice = updatedImportGood.IgSumPrice;
-            existingImportGood.IgCurrency = updatedImportGood.IgCurrency;
-            existingImportGood.IgImportDate = updatedImportGood.IgImportDate;
-            existingImportGood.IgSupplier = updatedImportGood.IgSupplier;
-
-            dbc.TblImportGoods.Update(existingImportGood);
-            dbc.SaveChanges();
-
-            return Ok(new { data = existingImportGood });
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete]
         [Route("XoaTblImportGood")]
-        public ActionResult Xoa(Guid igImportId)
+        public async Task<ActionResult> Xoa(Guid igImportId)
         {
-            var importGood = dbc.TblImportGoods.Find(igImportId);
-            if (importGood == null)
+            try
             {
-                return NotFound(new { message = "Import good not found" });
+                var importGood = await dbc.TblImportGoods.FindAsync(igImportId);
+                if (importGood == null)
+                {
+                    return NotFound(new { message = "Import good not found" });
+                }
+
+                var details = dbc.TblImportGoodsDetails.Where(d => d.IgdImportId == igImportId);
+                dbc.TblImportGoodsDetails.RemoveRange(details);
+
+                dbc.TblImportGoods.Remove(importGood);
+                await dbc.SaveChangesAsync();
+
+                return Ok(new { data = importGood });
             }
-
-            dbc.TblImportGoods.Remove(importGood);
-            dbc.SaveChanges();
-
-            return Ok(new { data = importGood });
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }
