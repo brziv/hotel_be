@@ -84,6 +84,5 @@ namespace hotel_be.Controllers
 
             return Ok(new { data = guest });
         }
-
     }
 }

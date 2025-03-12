@@ -51,34 +51,41 @@ namespace hotel_be.Controllers
 
         [HttpPut]
         [Route("UpdateTblEmployee")]
-        public ActionResult Update(Guid eEmployeeId, string eFirstName, string eLastName, string eEmail, string? ePhoneNumber, string ePosition, decimal eSalary)
+        public ActionResult Update([FromBody] TblEmployee updatedEmployee)
         {
-            TblEmployee employee = new TblEmployee
+            var existingEmployee = dbc.TblEmployees.Find(updatedEmployee.EEmployeeId);
+            if (existingEmployee == null)
             {
-                EEmployeeId = eEmployeeId,
-                EFirstName = eFirstName,
-                ELastName = eLastName,
-                EEmail = eEmail,
-                EPhoneNumber = ePhoneNumber,
-                EPosition = ePosition,
-                ESalary = eSalary
-            };
-            dbc.TblEmployees.Update(employee);
+                return NotFound(new { message = "Employee not found" });
+            }
+
+            existingEmployee.EFirstName = updatedEmployee.EFirstName;
+            existingEmployee.ELastName = updatedEmployee.ELastName;
+            existingEmployee.EEmail = updatedEmployee.EEmail;
+            existingEmployee.EPhoneNumber = updatedEmployee.EPhoneNumber;
+            existingEmployee.EPosition = updatedEmployee.EPosition;
+            existingEmployee.ESalary = updatedEmployee.ESalary;
+
+            dbc.TblEmployees.Update(existingEmployee);
             dbc.SaveChanges();
-            return Ok(new { data = employee });
+
+            return Ok(new { data = existingEmployee });
         }
 
         [HttpDelete]
         [Route("XoaTblEmployee")]
         public ActionResult Xoa(Guid eEmployeeId)
         {
-            TblEmployee employee = new TblEmployee
+            var employee = dbc.TblEmployees.Find(eEmployeeId);
+
+            if (employee == null)
             {
-                EEmployeeId = eEmployeeId
-            };
+                return NotFound(new { message = "Employee not found" });
+            }
 
             dbc.TblEmployees.Remove(employee);
             dbc.SaveChanges();
+
             return Ok(new { data = employee });
         }
     }

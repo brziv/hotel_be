@@ -50,34 +50,41 @@ namespace hotel_be.Controllers
 
         [HttpPut]
         [Route("UpdateTblPartner")]
-        public ActionResult Sua(Guid pPartnerId, string pPartnerName, string? pPartnerType, string pPhoneNumber, string? pEmail, string? pAddress)
+        public ActionResult Sua([FromBody] TblPartner updatedPartner)
         {
-            TblPartner Partner = new TblPartner
+            var existingPartner = dbc.TblPartners.Find(updatedPartner.PPartnerId);
+            if (existingPartner == null)
             {
-                PPartnerId = pPartnerId,
-                PPartnerName = pPartnerName,
-                PPartnerType = pPartnerType,
-                PPhoneNumber = pPhoneNumber,
-                PEmail = pEmail,
-                PAddress = pAddress
-            };
-            dbc.TblPartners.Update(Partner);
+                return NotFound(new { message = "Partner not found" });
+            }
+
+            existingPartner.PPartnerName = updatedPartner.PPartnerName;
+            existingPartner.PPartnerType = updatedPartner.PPartnerType;
+            existingPartner.PPhoneNumber = updatedPartner.PPhoneNumber;
+            existingPartner.PEmail = updatedPartner.PEmail;
+            existingPartner.PAddress = updatedPartner.PAddress;
+
+            dbc.TblPartners.Update(existingPartner);
             dbc.SaveChanges();
-            return Ok(new { data = Partner });
+
+            return Ok(new { data = existingPartner });
         }
 
         [HttpDelete]
         [Route("XoaTblPartner")]
         public ActionResult Xoa(Guid pPartnerId)
         {
-            TblPartner Partner = new TblPartner
-            {
-                PPartnerId = pPartnerId,
-            };
+            var partner = dbc.TblPartners.Find(pPartnerId);
 
-            dbc.TblPartners.Remove(Partner);
+            if (partner == null)
+            {
+                return NotFound(new { message = "Partner not found" });
+            }
+
+            dbc.TblPartners.Remove(partner);
             dbc.SaveChanges();
-            return Ok(new { data = Partner });
+
+            return Ok(new { data = partner });
         }
     }
 }
