@@ -58,7 +58,7 @@ namespace hotel_be.Controllers
                           (detail, goods) => new
                           {
                               igdId = detail.IgdId,
-                              igdGoodsId = detail.IgdGoodsId, // Added for quantity updates
+                              igdGoodsId = detail.IgdGoodsId,
                               goodsName = goods.GGoodsName,
                               igdQuantity = detail.IgdQuantity,
                               igdCostPrice = detail.IgdCostPrice
