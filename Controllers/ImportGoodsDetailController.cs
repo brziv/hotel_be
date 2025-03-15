@@ -19,9 +19,9 @@ namespace hotel_be.Controllers
             public Guid IgdId { get; set; }
             public int IgdQuantity { get; set; }
             public decimal IgdCostPrice { get; set; }
-            public string? GoodsName { get; set; }
-            public string? Supplier { get; set; }
-            public DateTime? ImportDate { get; set; }
+            public string? GGoodsName { get; set; }
+            public string? IgSupplier { get; set; }
+            public DateTime? IgImportDate { get; set; }
         }
 
         [HttpGet]
@@ -36,9 +36,9 @@ namespace hotel_be.Controllers
                     IgdId = igd.IgdId,
                     IgdQuantity = igd.IgdQuantity,
                     IgdCostPrice = igd.IgdCostPrice,
-                    GoodsName = igd.IgdGoods.GGoodsName,
-                    Supplier = igd.IgdImport.IgSupplier,
-                    ImportDate = igd.IgdImport.IgImportDate
+                    GGoodsName = igd.IgdGoods.GGoodsName,
+                    IgSupplier = igd.IgdImport.IgSupplier,
+                    IgImportDate = igd.IgdImport.IgImportDate
                 })
                 .ToList();
 
@@ -57,11 +57,11 @@ namespace hotel_be.Controllers
                           goods => goods.GGoodsId,
                           (detail, goods) => new
                           {
-                              igdId = detail.IgdId,
-                              igdGoodsId = detail.IgdGoodsId,
-                              goodsName = goods.GGoodsName,
-                              igdQuantity = detail.IgdQuantity,
-                              igdCostPrice = detail.IgdCostPrice
+                              detail.IgdId,
+                              detail.IgdGoodsId,
+                              goods.GGoodsName,
+                              detail.IgdQuantity,
+                              detail.IgdCostPrice
                           })
                     .ToListAsync();
 
@@ -90,8 +90,8 @@ namespace hotel_be.Controllers
                     detail.IgdGoodsId,
                     detail.IgdQuantity,
                     detail.IgdCostPrice,
-                    ImportDate = detail.IgdImport != null ? detail.IgdImport.IgImportDate : null,
-                    Supplier = detail.IgdImport != null ? detail.IgdImport.IgSupplier : null
+                    IgImportDate = detail.IgdImport != null ? detail.IgdImport.IgImportDate : null,
+                    IgSupplier = detail.IgdImport != null ? detail.IgdImport.IgSupplier : null
                 })
                 .ToList();
 
