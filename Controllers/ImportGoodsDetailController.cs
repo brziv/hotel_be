@@ -1,4 +1,5 @@
-﻿using hotel_be.ModelFromDB;
+﻿using hotel_be.DTOs;
+using hotel_be.ModelFromDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,19 +10,10 @@ namespace hotel_be.Controllers
     [ApiController]
     public class ImportGoodsDetailController : ControllerBase
     {
-        DBCnhom4 dbc;
+        private readonly DBCnhom4 dbc;
         public ImportGoodsDetailController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
-        }
-        public class ImportGoodsDetailDto
-        {
-            public Guid IgdId { get; set; }
-            public int IgdQuantity { get; set; }
-            public decimal IgdCostPrice { get; set; }
-            public string? GGoodsName { get; set; }
-            public string? IgSupplier { get; set; }
-            public DateTime? IgImportDate { get; set; }
         }
 
         [HttpGet]
@@ -36,9 +28,9 @@ namespace hotel_be.Controllers
                     IgdId = igd.IgdId,
                     IgdQuantity = igd.IgdQuantity,
                     IgdCostPrice = igd.IgdCostPrice,
-                    GGoodsName = igd.IgdGoods.GGoodsName,
-                    IgSupplier = igd.IgdImport.IgSupplier,
-                    IgImportDate = igd.IgdImport.IgImportDate
+                    GGoodsName = igd.IgdGoods != null ? igd.IgdGoods.GGoodsName : null,
+                    IgSupplier = igd.IgdImport != null ? igd.IgdImport.IgSupplier : null,
+                    IgImportDate = igd.IgdImport != null ? igd.IgdImport.IgImportDate : null
                 })
                 .ToList();
 
@@ -55,17 +47,17 @@ namespace hotel_be.Controllers
                     .Join(dbc.TblGoods,
                           detail => detail.IgdGoodsId,
                           goods => goods.GGoodsId,
-                          (detail, goods) => new
+                          (detail, goods) => new ImportGoodsByImportDto
                           {
-                              detail.IgdId,
-                              detail.IgdGoodsId,
-                              goods.GGoodsName,
-                              detail.IgdQuantity,
-                              detail.IgdCostPrice
+                              IgdId = detail.IgdId,
+                              IgdQuantity = detail.IgdQuantity,
+                              IgdCostPrice = detail.IgdCostPrice,
+                              IgdGoodsId = detail.IgdGoodsId,
+                              GGoodsName = goods.GGoodsName
                           })
                     .ToListAsync();
 
-                if (details == null || !details.Any())
+                if (details == null || details.Count == 0)
                 {
                     return NotFound(new { message = $"No details found for import ID {importId}" });
                 }
@@ -84,12 +76,13 @@ namespace hotel_be.Controllers
         {
             var details = dbc.TblImportGoodsDetails
                 .Where(detail => detail.IgdGoodsId == goodID)
-                .Select(detail => new {
-                    detail.IgdId,
-                    detail.IgdImportId,
-                    detail.IgdGoodsId,
-                    detail.IgdQuantity,
-                    detail.IgdCostPrice,
+                .Select(detail => new ImportGoodsByGoodDto
+                {
+                    IgdId = detail.IgdId,
+                    IgdQuantity = detail.IgdQuantity,
+                    IgdCostPrice = detail.IgdCostPrice,
+                    IgdImportId = detail.IgdImportId,
+                    IgdGoodsId = detail.IgdGoodsId,
                     IgImportDate = detail.IgdImport != null ? detail.IgdImport.IgImportDate : null,
                     IgSupplier = detail.IgdImport != null ? detail.IgdImport.IgSupplier : null
                 })

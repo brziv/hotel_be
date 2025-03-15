@@ -1,4 +1,5 @@
-﻿using hotel_be.ModelFromDB;
+﻿using hotel_be.DTOs;
+using hotel_be.ModelFromDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -12,38 +13,9 @@ namespace hotel_be.Controllers
     public class BookingController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-
-        // Constructor
         public BookingController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
-        }
-
-        // DTO Classes
-        public class BookingRoomsDTO
-        {
-            public Guid RoomId { get; set; }
-            public DateTime CheckInDate { get; set; }
-            public DateTime CheckOutDate { get; set; }
-        }
-
-        public class BookingRequestDTO
-        {
-            public Guid GuestId { get; set; }
-            public List<BookingRoomsDTO>? BRdto { get; set; }
-        }
-
-        public class BookingInAdvanceRequestDTO
-        {
-            public Guid GuestId { get; set; }
-            public decimal Deposit { get; set; }
-            public List<BookingRoomsDTO>? BRdto { get; set; }
-        }
-
-        public class ServiceDto
-        {
-            public Guid ServiceID { get; set; }
-            public int Quantity { get; set; }
         }
 
         // GET Methods

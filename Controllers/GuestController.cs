@@ -8,7 +8,7 @@ namespace hotel_be.Controllers
     [ApiController]
     public class GuestController : ControllerBase
     {
-        DBCnhom4 dbc;
+        private readonly DBCnhom4 dbc;
         public GuestController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
