@@ -96,14 +96,15 @@ namespace hotel_be.Controllers
             using (var cmd = dbc.Database.GetDbConnection().CreateCommand())
             {
                 cmd.CommandText = @"
-                    SELECT DISTINCT b.*, br.*
-                    FROM tbl_Bookings b
-                    JOIN tbl_BookingRooms br ON b.b_BookingID = br.br_BookingID
-                    JOIN tbl_Rooms r ON br.br_RoomID = r.r_RoomID
-                    JOIN tbl_Floors f ON r.r_FloorID = f.f_FloorID
-                    WHERE (@CheckInDate < br.br_CheckOutDate 
-                        AND @CheckOutDate > br.br_CheckInDate)
-                    AND f.f_Floor = @Floor";
+                    SELECT DISTINCT r.r_RoomNumber,b.b_BookingID,b.b_BookingStatus,b.b_TotalMoney,b.b_Deposit,g.g_FirstName,g.g_LastName,br_CheckInDate,br_CheckOutDate
+			        FROM tbl_Bookings b
+			        JOIN tbl_BookingRooms br ON b.b_BookingID = br.br_BookingID
+			        JOIN tbl_Rooms r ON br.br_RoomID = r.r_RoomID
+			        JOIN tbl_Floors f ON r.r_FloorID = f.f_FloorID
+			        JOIN tbl_Guests g On b.b_GuestID = g.g_GuestID
+			        WHERE 
+				        (@CheckInDate < br_CheckOutDate AND @CheckOutDate > br_CheckInDate)
+				        AND f.f_Floor = @Floor";
                 cmd.CommandType = CommandType.Text;
 
                 cmd.Parameters.AddRange(new[]
@@ -122,16 +123,17 @@ namespace hotel_be.Controllers
                     var bookings = dt.AsEnumerable().Select(row => new
                     {
                         BookingId = row["b_BookingID"],
-                        GuestId = row["b_GuestID"],
+                        FirstName = row["g_FirstName"],
+                        LastName = row["g_LastName"],
+                        Roomnum = row["r_RoomNumber"],
                         CheckInDate = row["br_CheckInDate"],
                         CheckOutDate = row["br_CheckOutDate"],
                         BookingStatus = row["b_BookingStatus"],
                         TotalMoney = row["b_TotalMoney"],
                         Deposit = row["b_Deposit"],
-                        CreatedAt = row["b_CreatedAt"]
                     }).ToList();
 
-                    return Ok(bookings);
+                    return Ok(new { bookings });
                 }
             }
         }
