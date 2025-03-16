@@ -1,6 +1,8 @@
-﻿using hotel_be.ModelFromDB;
+﻿using hotel_be.DTOs;
+using hotel_be.ModelFromDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace hotel_be.Controllers
 {
@@ -16,9 +18,27 @@ namespace hotel_be.Controllers
 
         [HttpGet]
         [Route("GetServiceList")]
-        public ActionResult Get()
+        public ActionResult GetServiceList()
         {
-            return Ok(new { data = dbc.TblServices.ToList() });
+            var services = dbc.TblServices
+                .Include(s => s.TblServiceGoods)
+                    .ThenInclude(sg => sg.SgGoods)
+                .Select(s => new ServiceGetDto
+                {
+                    SServiceId = s.SServiceId,
+                    SServiceName = s.SServiceName,
+                    SServiceCostPrice = s.TblServiceGoods.Sum(sg => sg.SgGoods.GCostPrice * sg.SgQuantity),
+                    SServiceSellPrice = s.TblServiceGoods.Sum(sg => sg.SgGoods.GSellingPrice * sg.SgQuantity),
+                    GoodsInfo = string.Join("\n", s.TblServiceGoods.Select(sg => $"{sg.SgQuantity} {sg.SgGoods.GGoodsName}")),
+                    ServiceGoods = s.TblServiceGoods.Select(sg => new ServiceGoodDto
+                    {
+                        SgGoodsId = sg.SgGoodsId,
+                        SgQuantity = sg.SgQuantity
+                    }).ToList()
+                })
+                .ToList();
+
+            return Ok(new { data = services });
         }
 
         [HttpGet]
@@ -38,42 +58,119 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblService")]
-        public ActionResult Them(TblService service)
+        public async Task<ActionResult> InsertTblService([FromBody] ServiceRequestDto serviceDto)
         {
-            dbc.TblServices.Add(service);
-            dbc.SaveChanges();
+            if (serviceDto == null || string.IsNullOrEmpty(serviceDto.SServiceName) || !serviceDto.ServiceGoods.Any())
+            {
+                return BadRequest("Invalid service data");
+            }
 
-            return Ok(new { data = service });
+            var service = new TblService
+            {
+                SServiceId = Guid.NewGuid(),
+                SServiceName = serviceDto.SServiceName,
+                SServiceCostPrice = 0,
+                SServiceSellPrice = 0,
+                TblServiceGoods = new List<TblServiceGood>()
+            };
+
+            foreach (var serviceGood in serviceDto.ServiceGoods)
+            {
+                var good = await dbc.TblGoods.FindAsync(serviceGood.SgGoodsId);
+                if (good == null)
+                {
+                    return BadRequest($"Good with ID {serviceGood.SgGoodsId} not found");
+                }
+
+                service.TblServiceGoods.Add(new TblServiceGood
+                {
+                    SgServiceGoodsId = Guid.NewGuid(),
+                    SgServiceId = service.SServiceId,
+                    SgGoodsId = serviceGood.SgGoodsId,
+                    SgQuantity = serviceGood.SgQuantity
+                });
+
+                service.SServiceCostPrice += good.GCostPrice * serviceGood.SgQuantity;
+                service.SServiceSellPrice += good.GSellingPrice * serviceGood.SgQuantity;
+            }
+
+            dbc.TblServices.Add(service);
+            await dbc.SaveChangesAsync();
+
+            return Ok(new { data = service.SServiceId });
         }
 
         [HttpPut]
         [Route("UpdateTblService")]
-        public ActionResult Sua(Guid sServiceId, string sServiceName, decimal sServiceCostPrice, decimal sServiceSellPrice)
+        public async Task<ActionResult> UpdateTblService([FromBody] ServiceRequestDto serviceDto)
         {
-            TblService Service = new TblService
+            if (serviceDto == null || !serviceDto.ServiceGoods.Any())
             {
-                SServiceId = sServiceId,
-                SServiceName = sServiceName,
-                SServiceCostPrice = sServiceCostPrice,
-                SServiceSellPrice = sServiceSellPrice
-            };
-            dbc.TblServices.Update(Service);
-            dbc.SaveChanges();
-            return Ok(new { data = Service });
+                return BadRequest("Invalid service data");
+            }
+
+            var service = await dbc.TblServices
+                .Include(s => s.TblServiceGoods)
+                .FirstOrDefaultAsync(s => s.SServiceId == serviceDto.SServiceId);
+
+            if (service == null)
+            {
+                return NotFound("Service not found");
+            }
+
+            service.SServiceName = serviceDto.SServiceName;
+
+            // Remove existing service goods
+            dbc.TblServiceGoods.RemoveRange(service.TblServiceGoods);
+            service.TblServiceGoods.Clear();
+
+            // Recalculate prices and add new service goods
+            service.SServiceCostPrice = 0;
+            service.SServiceSellPrice = 0;
+
+            foreach (var serviceGood in serviceDto.ServiceGoods)
+            {
+                var good = await dbc.TblGoods.FindAsync(serviceGood.SgGoodsId);
+                if (good == null)
+                {
+                    return BadRequest($"Good with ID {serviceGood.SgGoodsId} not found");
+                }
+
+                service.TblServiceGoods.Add(new TblServiceGood
+                {
+                    SgServiceGoodsId = Guid.NewGuid(),
+                    SgServiceId = service.SServiceId,
+                    SgGoodsId = serviceGood.SgGoodsId,
+                    SgQuantity = serviceGood.SgQuantity
+                });
+
+                service.SServiceCostPrice += good.GCostPrice * serviceGood.SgQuantity;
+                service.SServiceSellPrice += good.GSellingPrice * serviceGood.SgQuantity;
+            }
+
+            await dbc.SaveChangesAsync();
+            return Ok(new { data = service.SServiceId });
         }
 
         [HttpDelete]
         [Route("XoaTblService")]
-        public ActionResult Xoa(Guid sServiceId)
+        public async Task<ActionResult> XoaTblService([FromQuery] Guid sServiceId)
         {
-            TblService Service = new TblService
-            {
-                SServiceId = sServiceId,
-            };
+            var service = await dbc.TblServices
+                .Include(s => s.TblServiceGoods)
+                .FirstOrDefaultAsync(s => s.SServiceId == sServiceId);
 
-            dbc.TblServices.Remove(Service);
-            dbc.SaveChanges();
-            return Ok(new { data = Service });
+            if (service == null)
+            {
+                return NotFound("Service not found");
+            }
+
+            // Remove TblServiceGood entries (foreign key)
+            dbc.TblServiceGoods.RemoveRange(service.TblServiceGoods);
+            dbc.TblServices.Remove(service);
+
+            await dbc.SaveChangesAsync();
+            return Ok(new { message = "Service deleted successfully" });
         }
     }
 }

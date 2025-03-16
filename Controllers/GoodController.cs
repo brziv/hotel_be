@@ -1,6 +1,7 @@
 ﻿using hotel_be.ModelFromDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace hotel_be.Controllers
 {
@@ -76,18 +77,23 @@ namespace hotel_be.Controllers
 
         [HttpDelete]
         [Route("XoaTblGood")]
-        public ActionResult Xoa(Guid gGoodsId)
+        public async Task<ActionResult> Xoa([FromQuery] Guid gGoodsId)
         {
-            var good = dbc.TblGoods.Find(gGoodsId);
+            var good = await dbc.TblGoods
+                .Include(g => g.TblImportGoodsDetails)
+                .FirstOrDefaultAsync(g => g.GGoodsId == gGoodsId);
+
             if (good == null)
             {
-                return NotFound(new { message = "Good not found" });
+                return NotFound("Good not found");
             }
 
+            // Remove TblServiceGood entries (foreign key)
+            dbc.TblImportGoodsDetails.RemoveRange(good.TblImportGoodsDetails);
             dbc.TblGoods.Remove(good);
-            dbc.SaveChanges();
 
-            return Ok(new { data = good });
+            await dbc.SaveChangesAsync();
+            return Ok(new { message = "Good deleted successfully" });
         }
     }
 }
