@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 namespace hotel_be.ModelFromDB;
-
-public partial class DBCnhom4 : DbContext
+public partial class DBCnhom4 : IdentityDbContext<IdentityUser>
 {
-    public DBCnhom4()
-    {
-    }
-
     public DBCnhom4(DbContextOptions<DBCnhom4> options)
         : base(options)
     {
@@ -45,6 +41,8 @@ public partial class DBCnhom4 : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<TblBooking>(entity =>
         {
             entity.HasKey(e => e.BBookingId).HasName("PK__tbl_Book__63A328519228D519");
