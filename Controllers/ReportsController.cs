@@ -25,11 +25,12 @@ namespace hotel_be.Controllers
         {
             var bookings = await dbc.TblBookings
                 .Include(b => b.TblBookingRooms)
-                .Where(b => b.BCreatedAt >= start && b.BCreatedAt <= end)
+                .Where(b => b.TblBookingRooms.Any(r =>
+                (r.BrCheckInDate <= end && r.BrCheckOutDate >= start)))
                 .Select(b => new
                 {
-                    checkInTime = b.TblBookingRooms.Any() ? b.TblBookingRooms.First().BrCheckInDate : (DateTime?)null,
-                    checkOutTime = b.TblBookingRooms.Any() ? b.TblBookingRooms.First().BrCheckOutDate : (DateTime?)null,
+                    checkInTime = b.TblBookingRooms.Any() ? b.TblBookingRooms.Min(r => r.BrCheckInDate) : (DateTime?)null,
+                    checkOutTime = b.TblBookingRooms.Any() ? b.TblBookingRooms.Max(r => r.BrCheckOutDate) : (DateTime?)null,
                     totalMoney = b.BTotalMoney,
                     status = b.BBookingStatus
                 })
