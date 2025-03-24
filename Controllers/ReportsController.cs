@@ -41,14 +41,17 @@ namespace hotel_be.Controllers
 
         [HttpGet]
         [Route("GetRoomData")]
-        public async Task<ActionResult> GetRoomData(DateTime start)
+        public async Task<ActionResult> GetRoomData(DateTime start, DateTime end)
         {
+            // Validate date range
+            if (start > end) return BadRequest("Start date must be before end date");
+
             // Get total rooms count
             var totalRooms = await dbc.TblRooms.CountAsync();
 
-            // Get occupied rooms count (rooms with check-in on or after start)
+            // Get occupied rooms count (rooms with check-in before end and check-out after start)
             var occupiedRooms = await dbc.TblBookingRooms
-                .Where(br => br.BrCheckInDate >= start)
+                .Where(br => br.BrCheckInDate <= end && br.BrCheckOutDate >= start)
                 .Select(br => br.BrRoomId) // Guid type
                 .Distinct()
                 .CountAsync();
@@ -63,10 +66,11 @@ namespace hotel_be.Controllers
                     {
                         RoomId = br.BrRoomId, // Guid type
                         Revenue = b.BTotalMoney ?? 0m, // Assuming decimal?
-                        CheckInDate = br.BrCheckInDate
+                        CheckInDate = br.BrCheckInDate,
+                        CheckOutDate = br.BrCheckOutDate
                     }
                 )
-                .Where(x => x.CheckInDate >= start)
+                .Where(x => x.CheckInDate <= end && x.CheckOutDate >= start)
                 .ToListAsync();
 
             // Get all room types
@@ -103,14 +107,18 @@ namespace hotel_be.Controllers
 
         [HttpGet]
         [Route("GetServiceData")]
-        public async Task<ActionResult> GetServiceData(DateTime start)
+        public async Task<ActionResult> GetServiceData(DateTime start, DateTime end)
         {
-            // Normalize start date to UTC and truncate milliseconds for consistency
-            start = start.ToUniversalTime().Date.Add(start.TimeOfDay).AddTicks(-(start.Ticks % TimeSpan.TicksPerSecond));
+            // Validate date range
+            if (start > end) return BadRequest("Start date must be before end date");
 
-            // Step 1: Check if there are any booking services after the start date
+            // Normalize start and end dates to UTC and truncate milliseconds for consistency
+            start = start.ToUniversalTime().Date.Add(start.TimeOfDay).AddTicks(-(start.Ticks % TimeSpan.TicksPerSecond));
+            end = end.ToUniversalTime().Date.Add(end.TimeOfDay).AddTicks(-(end.Ticks % TimeSpan.TicksPerSecond));
+
+            // Step 1: Check if there are any booking services between start and end
             var bookingServicesCount = await dbc.TblBookingServices
-                .CountAsync(bs => bs.BsCreatedAt >= start);
+                .CountAsync(bs => bs.BsCreatedAt >= start && bs.BsCreatedAt <= end);
             if (bookingServicesCount == 0)
             {
                 var minCreatedAt = await dbc.TblBookingServices
@@ -122,13 +130,13 @@ namespace hotel_be.Controllers
                 return Ok(new
                 {
                     data = new List<object>(),
-                    debug = $"No booking services found with BsCreatedAt >= {start}. Total BookingServices: {bookingServicesCount}, Min BsCreatedAt: {minCreatedAt}, Max BsCreatedAt: {maxCreatedAt}"
+                    debug = $"No booking services found with BsCreatedAt between {start} and {end}. Total BookingServices: {bookingServicesCount}, Min BsCreatedAt: {minCreatedAt}, Max BsCreatedAt: {maxCreatedAt}"
                 });
             }
 
             // Step 2: Get booking services with their bookings and services
             var bookingServicesData = await dbc.TblBookingServices
-                .Where(bs => bs.BsCreatedAt >= start)
+                .Where(bs => bs.BsCreatedAt >= start && bs.BsCreatedAt <= end)
                 .Join(
                     dbc.TblBookings,
                     bs => bs.BsBookingId,
@@ -142,7 +150,7 @@ namespace hotel_be.Controllers
                     (bs, s) => new
                     {
                         ServiceName = s.SServiceName,
-                        Quantity = bs.BookingService.BsQuantity,  // Changed to BsQuantity
+                        Quantity = bs.BookingService.BsQuantity,
                         SellPrice = s.SServiceSellPrice,
                         BookingServiceCreatedAt = bs.BookingService.BsCreatedAt
                     }
@@ -195,10 +203,13 @@ namespace hotel_be.Controllers
 
         [HttpGet]
         [Route("GetCostData")]
-        public async Task<ActionResult> GetCostData(DateTime start)
+        public async Task<ActionResult> GetCostData(DateTime start, DateTime end)
         {
+            // Validate date range
+            if (start > end) return BadRequest("Start date must be before end date");
+
             var goodsCosts = await dbc.TblImportGoods
-                .Where(ig => ig.IgImportDate >= start)
+                .Where(ig => ig.IgImportDate >= start && ig.IgImportDate <= end)
                 .Select(ig => new
                 {
                     type = "Goods",
@@ -221,22 +232,25 @@ namespace hotel_be.Controllers
 
         [HttpGet]
         [Route("GetSummary")]
-        public async Task<ActionResult> GetSummary(DateTime start)
+        public async Task<ActionResult> GetSummary(DateTime start, DateTime end)
         {
+            // Validate date range
+            if (start > end) return BadRequest("Start date must be before end date");
+
             // Total bookings
             var totalBookings = await dbc.TblBookings
-                .Where(b => b.BCreatedAt >= start)
+                .Where(b => b.BCreatedAt >= start && b.BCreatedAt <= end)
                 .CountAsync();
 
             // Room revenue (from paid bookings)
             var roomRevenue = await dbc.TblBookings
-                .Where(b => b.BCreatedAt >= start && b.BBookingStatus == "Paid")
+                .Where(b => b.BCreatedAt >= start && b.BCreatedAt <= end && b.BBookingStatus == "Paid")
                 .SumAsync(b => b.BTotalMoney ?? 0m);
 
             // Service revenue
             var serviceRevenue = await dbc.TblBookingServices
                 .Join(
-                    dbc.TblBookings.Where(b => b.BCreatedAt >= start),
+                    dbc.TblBookings.Where(b => b.BCreatedAt >= start && b.BCreatedAt <= end),
                     bs => bs.BsBookingId,
                     b => b.BBookingId,
                     (bs, b) => bs
@@ -251,12 +265,12 @@ namespace hotel_be.Controllers
 
             // Total costs
             var totalCosts = await dbc.TblImportGoods
-                .Where(ig => ig.IgImportDate >= start)
+                .Where(ig => ig.IgImportDate >= start && ig.IgImportDate <= end)
                 .SumAsync(ig => ig.IgSumPrice);
 
             // Bookings by status
             var bookingsByStatus = await dbc.TblBookings
-                .Where(b => b.BCreatedAt >= start)
+                .Where(b => b.BCreatedAt >= start && b.BCreatedAt <= end)
                 .GroupBy(b => b.BBookingStatus)
                 .Select(g => new
                 {
@@ -265,14 +279,13 @@ namespace hotel_be.Controllers
                 })
                 .ToListAsync();
 
-            // Occupancy rate (using current date as implicit end)
+            // Occupancy rate (using the provided start and end)
             var totalRooms = await dbc.TblRooms.CountAsync();
-            var end = DateTime.UtcNow; // Implicit end as "now"; adjust if needed
             var totalDays = (end - start).Days + 1;
             var totalRoomDays = totalRooms * totalDays;
 
             var bookingRooms = await dbc.TblBookingRooms
-                .Where(br => br.BrCheckInDate >= start)
+                .Where(br => br.BrCheckInDate <= end && br.BrCheckOutDate >= start)
                 .ToListAsync();
             var occupiedRoomDays = 0;
             foreach (var br in bookingRooms)
