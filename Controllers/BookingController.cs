@@ -244,7 +244,7 @@ namespace hotel_be.Controllers
 
                         var br = new TblBookingRoom
                         {
-                            BrBookingRoomsId = Guid.NewGuid(),
+                            BrId = Guid.NewGuid(),
                             BrBookingId = bb.BBookingId,
                             BrRoomId = roomDto.RoomId,
                             BrCheckInDate = roomDto.CheckInDate,
@@ -311,7 +311,7 @@ namespace hotel_be.Controllers
 
                     var br = new TblBookingRoom
                     {
-                        BrBookingRoomsId = Guid.NewGuid(),
+                        BrId = Guid.NewGuid(),
                         BrBookingId = bb.BBookingId,
                         BrRoomId = roomDto.RoomId,
                         BrCheckInDate = roomDto.CheckInDate,

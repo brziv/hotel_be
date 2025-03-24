@@ -52,7 +52,7 @@ namespace hotel_be.Controllers
         {
             TblBookingRoom bookingRoom = new TblBookingRoom
             {
-                BrBookingRoomsId = brBookingRoomsId,
+                BrId = brBookingRoomsId,
                 BrBookingId = brBookingId,
                 BrRoomId = brRoomId,
                 BrCheckInDate = brCheckInDate,
@@ -71,7 +71,7 @@ namespace hotel_be.Controllers
         {
             TblBookingRoom booking = new TblBookingRoom
             {
-                BrBookingRoomsId = brBookingRoomsId,
+                BrId = brBookingRoomsId,
             };
 
             dbc.TblBookingRooms.Remove(booking);

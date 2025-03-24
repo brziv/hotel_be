@@ -144,14 +144,14 @@ namespace hotel_be.Controllers
                     (bs, b) => new { BookingService = bs, Booking = b }
                 )
                 .Join(
-                    dbc.TblServices,
+                    dbc.TblServicePackages,
                     bs => bs.BookingService.BsServiceId,
-                    s => s.SServiceId,
-                    (bs, s) => new
+                    sp => sp.SpPackageId,
+                    (bs, sp) => new
                     {
-                        ServiceName = s.SServiceName,
+                        ServiceName = sp.SpPackageName,
                         Quantity = bs.BookingService.BsQuantity,
-                        SellPrice = s.SServiceSellPrice,
+                        SellPrice = sp.SServiceSellPrice,
                         BookingServiceCreatedAt = bs.BookingService.BsCreatedAt
                     }
                 )
@@ -161,7 +161,7 @@ namespace hotel_be.Controllers
             if (!bookingServicesData.Any())
             {
                 var totalBookingServices = await dbc.TblBookingServices.CountAsync();
-                var totalServices = await dbc.TblServices.CountAsync();
+                var totalServices = await dbc.TblServicePackages.CountAsync();
                 var totalBookings = await dbc.TblBookings.CountAsync();
                 return Ok(new
                 {
@@ -256,9 +256,9 @@ namespace hotel_be.Controllers
                     (bs, b) => bs
                 )
                 .Join(
-                    dbc.TblServices,
+                    dbc.TblServicePackages,
                     bs => bs.BsServiceId,
-                    s => s.SServiceId,
+                    sp => sp.SpPackageId,
                     (bs, s) => (decimal)bs.BsQuantity * s.SServiceSellPrice
                 )
                 .SumAsync();

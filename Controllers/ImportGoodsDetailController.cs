@@ -28,7 +28,7 @@ namespace hotel_be.Controllers
                     IgdId = igd.IgdId,
                     IgdQuantity = igd.IgdQuantity,
                     IgdCostPrice = igd.IgdCostPrice,
-                    GGoodsName = igd.IgdGoods != null ? igd.IgdGoods.GGoodsName : null,
+                    GGoodsName = igd.IgdGoods != null ? igd.IgdGoods.PProductName : null,
                     IgSupplier = igd.IgdImport != null ? igd.IgdImport.IgSupplier : null,
                     IgImportDate = igd.IgdImport != null ? igd.IgdImport.IgImportDate : null
                 })
@@ -44,16 +44,16 @@ namespace hotel_be.Controllers
             {
                 var details = await dbc.TblImportGoodsDetails
                     .Where(d => d.IgdImportId == importId)
-                    .Join(dbc.TblGoods,
+                    .Join(dbc.TblProducts,
                           detail => detail.IgdGoodsId,
-                          goods => goods.GGoodsId,
+                          goods => goods.PProductId,
                           (detail, goods) => new ImportGoodsByImportDto
                           {
                               IgdId = detail.IgdId,
                               IgdQuantity = detail.IgdQuantity,
                               IgdCostPrice = detail.IgdCostPrice,
                               IgdGoodsId = detail.IgdGoodsId,
-                              GGoodsName = goods.GGoodsName
+                              GGoodsName = goods.PProductName
                           })
                     .ToListAsync();
 

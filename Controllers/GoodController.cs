@@ -19,69 +19,50 @@ namespace hotel_be.Controllers
         [Route("GetGoodList")]
         public ActionResult Get()
         {
-            return Ok(new { data = dbc.TblGoods.ToList() });
-        }
-
-        [HttpGet]
-        [Route("SearchTblGood")]
-        public ActionResult TimKiem(string s)
-        {
-            var results = dbc.TblGoods
-                .Where(item =>
-                    item.GGoodsName.Contains(s) ||
-                    (item.GCategory != null && item.GCategory.Contains(s)) ||
-                    (item.GQuantity.HasValue && item.GQuantity.Value.ToString().Contains(s)) ||
-                    (item.GUnit != null && item.GUnit.Contains(s)) ||
-                    item.GCostPrice.ToString().Contains(s) ||
-                    item.GSellingPrice.ToString().Contains(s) ||
-                    item.GCurrency.Contains(s)
-                )
-                .ToList();
-
-            return Ok(new { data = results });
+            return Ok(new { data = dbc.TblProducts.ToList() });
         }
 
         [HttpPost]
-        [Route("InsertTblGood")]
-        public ActionResult Them(TblGood good)
+        [Route("InsertTblProduct")]
+        public ActionResult Them(TblProduct product)
         {
-            dbc.TblGoods.Add(good);
+            dbc.TblProducts.Add(product);
             dbc.SaveChanges();
 
-            return Ok(new { data = good });
+            return Ok(new { data = product });
         }
 
         [HttpPut]
-        [Route("UpdateTblGood")]
-        public async Task<ActionResult> Sua([FromBody] TblGood updatedGood)
+        [Route("UpdateTblProduct")]
+        public async Task<ActionResult> Sua([FromBody] TblProduct updatedProduct)
         {
-            var existingGood = await dbc.TblGoods.FindAsync(updatedGood.GGoodsId);
-            if (existingGood == null)
+            var existingProduct = await dbc.TblProducts.FindAsync(updatedProduct.PProductId);
+            if (existingProduct == null)
             {
                 return NotFound(new { message = "Good not found" });
             }
 
-            existingGood.GGoodsName = updatedGood.GGoodsName;
-            existingGood.GCategory = updatedGood.GCategory;
-            existingGood.GQuantity = updatedGood.GQuantity;
-            existingGood.GUnit = updatedGood.GUnit;
-            existingGood.GCostPrice = updatedGood.GCostPrice;
-            existingGood.GSellingPrice = updatedGood.GSellingPrice;
-            existingGood.GCurrency = updatedGood.GCurrency;
+            existingProduct.PProductId = updatedProduct.PProductId;
+            existingProduct.PCategory = updatedProduct.PCategory;
+            existingProduct.PQuantity = updatedProduct.PQuantity;
+            existingProduct.PUnit = updatedProduct.PUnit;
+            existingProduct.PCostPrice = updatedProduct.PCostPrice;
+            existingProduct.PSellingPrice = updatedProduct.PSellingPrice;
+            existingProduct.PCurrency = updatedProduct.PCurrency;
 
-            dbc.TblGoods.Update(existingGood);
+            dbc.TblProducts.Update(existingProduct);
             dbc.SaveChanges();
 
-            return Ok(new { data = existingGood });
+            return Ok(new { data = existingProduct });
         }
 
         [HttpDelete]
-        [Route("XoaTblGood")]
-        public async Task<ActionResult> Xoa([FromQuery] Guid gGoodsId)
+        [Route("XoaTblProduct")]
+        public async Task<ActionResult> Xoa([FromQuery] Guid PProductId)
         {
-            var good = await dbc.TblGoods
+            var good = await dbc.TblProducts
                 .Include(g => g.TblImportGoodsDetails)
-                .FirstOrDefaultAsync(g => g.GGoodsId == gGoodsId);
+                .FirstOrDefaultAsync(g => g.PProductId == PProductId);
 
             if (good == null)
             {
@@ -90,7 +71,7 @@ namespace hotel_be.Controllers
 
             // Remove TblServiceGood entries (foreign key)
             dbc.TblImportGoodsDetails.RemoveRange(good.TblImportGoodsDetails);
-            dbc.TblGoods.Remove(good);
+            dbc.TblProducts.Remove(good);
 
             await dbc.SaveChangesAsync();
             return Ok(new { message = "Good deleted successfully" });

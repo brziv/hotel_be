@@ -51,7 +51,7 @@ namespace hotel_be.Controllers
         {
             TblBookingService bookingServices = new TblBookingService
             {
-                BsBookingServicesId = bsBookingServicesId,
+                BsId = bsBookingServicesId,
                 BsBookingId = bsBookingId,
                 BsServiceId = bsServiceId,
                 BsQuantity = bsQuantity,
@@ -71,7 +71,7 @@ namespace hotel_be.Controllers
         {
             TblBookingService bookingServices = new TblBookingService
             {
-                BsBookingServicesId = bsBookingServicesId,
+                BsId = bsBookingServicesId,
             };
 
             dbc.TblBookingServices.Add(bookingServices);

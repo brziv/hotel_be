@@ -18,16 +18,16 @@ namespace hotel_be.Controllers
         [Route("GetServiceGoodList")]
         public ActionResult Get()
         {
-            return Ok(new { data = dbc.TblServiceGoods.ToList() });
+            return Ok(new { data = dbc.TblPackageDetails.ToList() });
         }
 
         [HttpGet]
         [Route("SearchTblServiceGood")]
         public ActionResult TimKiem(string s)
         {
-            var results = dbc.TblServiceGoods
+            var results = dbc.TblPackageDetails
                 .Where(item =>
-                    item.SgQuantity.ToString().Contains(s)
+                    item.PdQuantity.ToString().Contains(s)
                 )
                 .ToList();
 
@@ -36,42 +36,42 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("InsertTblServiceGood")]
-        public ActionResult Them(TblServiceGood serviceGood)
+        public ActionResult Them(TblPackageDetail packageDetail)
         {
-            dbc.TblServiceGoods.Add(serviceGood);
+            dbc.TblPackageDetails.Add(packageDetail);
             dbc.SaveChanges();
 
-            return Ok(new { data = serviceGood });
+            return Ok(new { data = packageDetail });
         }
 
         [HttpPut]
         [Route("UpdateTblServiceGood")]
-        public ActionResult Sua(Guid sgServiceGoodsId, Guid sgServiceId, Guid sgGoodsId, int sgQuantity)
+        public ActionResult Sua(Guid pdDetailId, Guid pdPackageId, Guid pdProductId, int pdQuantity)
         {
-            TblServiceGood ServiceGood = new TblServiceGood
+            TblPackageDetail packageDetail = new TblPackageDetail
             {
-                SgServiceGoodsId = sgServiceGoodsId,
-                SgServiceId = sgServiceId,
-                SgGoodsId = sgGoodsId,
-                SgQuantity = sgQuantity
+                PdDetailId = pdDetailId,
+                PdPackageId = pdPackageId,
+                PdProductId = pdProductId,
+                PdQuantity = pdQuantity
             };
-            dbc.TblServiceGoods.Update(ServiceGood);
+            dbc.TblPackageDetails.Update(packageDetail);
             dbc.SaveChanges();
-            return Ok(new { data = ServiceGood });
+            return Ok(new { data = packageDetail });
         }
 
         [HttpDelete]
         [Route("XoaTblServiceGood")]
         public ActionResult Xoa(Guid sgServiceGoodsId)
         {
-            TblServiceGood ServiceGood = new TblServiceGood
+            TblPackageDetail packageDetail = new TblPackageDetail
             {
-                SgServiceGoodsId = sgServiceGoodsId,
+                PdDetailId = sgServiceGoodsId
             };
 
-            dbc.TblServiceGoods.Remove(ServiceGood);
+            dbc.TblPackageDetails.Remove(packageDetail);
             dbc.SaveChanges();
-            return Ok(new { data = ServiceGood });
+            return Ok(new { data = packageDetail });
         }
     }
 }
