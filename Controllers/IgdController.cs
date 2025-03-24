@@ -8,10 +8,10 @@ namespace hotel_be.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ImportGoodsDetailController : ControllerBase
+    public class IgdController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-        public ImportGoodsDetailController(DBCnhom4 dbc_in)
+        public IgdController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
         }
@@ -28,7 +28,7 @@ namespace hotel_be.Controllers
                     IgdId = igd.IgdId,
                     IgdQuantity = igd.IgdQuantity,
                     IgdCostPrice = igd.IgdCostPrice,
-                    GGoodsName = igd.IgdGoods != null ? igd.IgdGoods.PProductName : null,
+                    PProductName = igd.IgdGoods != null ? igd.IgdGoods.PProductName : null,
                     IgSupplier = igd.IgdImport != null ? igd.IgdImport.IgSupplier : null,
                     IgImportDate = igd.IgdImport != null ? igd.IgdImport.IgImportDate : null
                 })
@@ -53,7 +53,7 @@ namespace hotel_be.Controllers
                               IgdQuantity = detail.IgdQuantity,
                               IgdCostPrice = detail.IgdCostPrice,
                               IgdGoodsId = detail.IgdGoodsId,
-                              GGoodsName = goods.PProductName
+                              PProductName = goods.PProductName
                           })
                     .ToListAsync();
 

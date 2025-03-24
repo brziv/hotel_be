@@ -9,7 +9,7 @@
 
     public class ImportGoodsDetailDto : BaseImportGoodsDto
     {
-        public string? GGoodsName { get; set; }
+        public string? PProductName { get; set; }
         public string? IgSupplier { get; set; }
         public DateTime? IgImportDate { get; set; }
     }
@@ -17,7 +17,7 @@
     public class ImportGoodsByImportDto : BaseImportGoodsDto
     {
         public Guid IgdGoodsId { get; set; }
-        public string? GGoodsName { get; set; }
+        public string? PProductName { get; set; }
     }
 
     public class ImportGoodsByGoodDto : BaseImportGoodsDto

@@ -8,41 +8,41 @@ namespace hotel_be.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ServiceController : ControllerBase
+    public class PackageController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-        public ServiceController(DBCnhom4 dbc_in)
+        public PackageController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
         }
 
         [HttpGet]
-        [Route("GetServiceList")]
-        public ActionResult GetServiceList()
+        [Route("GetPackageList")]
+        public ActionResult GetPackageList()
         {
-            var services = dbc.TblServicePackages
+            var packages = dbc.TblServicePackages
                 .Include(s => s.TblPackageDetails)
                     .ThenInclude(sg => sg.PdProduct)
-                .Select(s => new ServiceGetDto
+                .Select(s => new PackageGetDto
                 {
-                    SServiceId = s.SpPackageId,
-                    SServiceName = s.SpPackageName,
+                    SpPackageId = s.SpPackageId,
+                    SpPackageName = s.SpPackageName,
                     SServiceCostPrice = s.TblPackageDetails.Sum(sg => sg.PdProduct.PCostPrice * sg.PdQuantity),
                     SServiceSellPrice = s.TblPackageDetails.Sum(sg => sg.PdProduct.PSellingPrice * sg.PdQuantity),
-                    GoodsInfo = string.Join("\n", s.TblPackageDetails.Select(sg => $"{sg.PdQuantity} {sg.PdProduct.PProductName}")),
-                    ServiceGoods = s.TblPackageDetails.Select(sg => new ServiceGoodDto
+                    ProductsInfo = string.Join("\n", s.TblPackageDetails.Select(sg => $"{sg.PdQuantity} {sg.PdProduct.PProductName}")),
+                    PackageDetails = s.TblPackageDetails.Select(sg => new PackageDetailDto
                     {
-                        SgGoodsId = sg.PdProductId,
-                        SgQuantity = sg.PdQuantity
+                        PdProductId = sg.PdProductId,
+                        PdQuantity = sg.PdQuantity
                     }).ToList()
                 })
                 .ToList();
 
-            return Ok(new { data = services });
+            return Ok(new { data = packages });
         }
 
         [HttpGet]
-        [Route("SearchTblService")]
+        [Route("SearchTblPackage")]
         public ActionResult TimKiem(string s)
         {
             var results = dbc.TblServicePackages
@@ -57,41 +57,41 @@ namespace hotel_be.Controllers
         }
 
         [HttpPost]
-        [Route("InsertTblService")]
-        public async Task<ActionResult> InsertTblService([FromBody] ServiceRequestDto serviceDto)
+        [Route("InsertTblPackage")]
+        public async Task<ActionResult> InsertTblService([FromBody] PackageRequestDto packageDto)
         {
-            if (serviceDto == null || string.IsNullOrEmpty(serviceDto.SServiceName) || !serviceDto.ServiceGoods.Any())
+            if (packageDto == null || string.IsNullOrEmpty(packageDto.SpPackageName) || !packageDto.PackageDetails.Any())
             {
-                return BadRequest("Invalid service data");
+                return BadRequest("Invalid package data");
             }
 
             var service = new TblServicePackage
             {
                 SpPackageId = Guid.NewGuid(),
-                SpPackageName = serviceDto.SServiceName,
+                SpPackageName = packageDto.SpPackageName,
                 SServiceCostPrice = 0,
                 SServiceSellPrice = 0,
                 TblPackageDetails = new List<TblPackageDetail>()
             };
 
-            foreach (var serviceGood in serviceDto.ServiceGoods)
+            foreach (var packageDetail in packageDto.PackageDetails)
             {
-                var good = await dbc.TblProducts.FindAsync(serviceGood.SgGoodsId);
-                if (good == null)
+                var product = await dbc.TblProducts.FindAsync(packageDetail.PdProductId);
+                if (product == null)
                 {
-                    return BadRequest($"Good with ID {serviceGood.SgGoodsId} not found");
+                    return BadRequest($"product with ID {packageDetail.PdProductId} not found");
                 }
 
                 service.TblPackageDetails.Add(new TblPackageDetail
                 {
                     PdDetailId = Guid.NewGuid(),
                     PdPackageId = service.SpPackageId,
-                    PdProductId = serviceGood.SgGoodsId,
-                    PdQuantity = serviceGood.SgQuantity
+                    PdProductId = packageDetail.PdProductId,
+                    PdQuantity = packageDetail.PdQuantity
                 });
 
-                service.SServiceCostPrice += good.PCostPrice * serviceGood.SgQuantity;
-                service.SServiceSellPrice += good.PSellingPrice * serviceGood.SgQuantity;
+                service.SServiceCostPrice += product.PCostPrice * packageDetail.PdQuantity;
+                service.SServiceSellPrice += product.PSellingPrice * packageDetail.PdQuantity;
             }
 
             dbc.TblServicePackages.Add(service);
@@ -101,51 +101,51 @@ namespace hotel_be.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateTblService")]
-        public async Task<ActionResult> UpdateTblService([FromBody] ServiceRequestDto serviceDto)
+        [Route("UpdateTblPackage")]
+        public async Task<ActionResult> UpdateTblService([FromBody] PackageRequestDto packageDto)
         {
-            if (serviceDto == null || !serviceDto.ServiceGoods.Any())
+            if (packageDto == null || !packageDto.PackageDetails.Any())
             {
-                return BadRequest("Invalid service data");
+                return BadRequest("Invalid package data");
             }
 
             var service = await dbc.TblServicePackages
                 .Include(s => s.TblPackageDetails)
-                .FirstOrDefaultAsync(s => s.SpPackageId == serviceDto.SServiceId);
+                .FirstOrDefaultAsync(s => s.SpPackageId == packageDto.SpPackageId);
 
             if (service == null)
             {
-                return NotFound("Service not found");
+                return NotFound("Package not found");
             }
 
-            service.SpPackageName = serviceDto.SServiceName;
+            service.SpPackageName = packageDto.SpPackageName;
 
-            // Remove existing service goods
+            // Remove existing package details
             dbc.TblPackageDetails.RemoveRange(service.TblPackageDetails);
             service.TblPackageDetails.Clear();
 
-            // Recalculate prices and add new service goods
+            // Recalculate prices and add new package details
             service.SServiceCostPrice = 0;
             service.SServiceSellPrice = 0;
 
-            foreach (var serviceGood in serviceDto.ServiceGoods)
+            foreach (var packageDetail in packageDto.PackageDetails)
             {
-                var good = await dbc.TblProducts.FindAsync(serviceGood.SgGoodsId);
-                if (good == null)
+                var product = await dbc.TblProducts.FindAsync(packageDetail.PdProductId);
+                if (product == null)
                 {
-                    return BadRequest($"Good with ID {serviceGood.SgGoodsId} not found");
+                    return BadRequest($"product with ID {packageDetail.PdProductId} not found");
                 }
 
                 service.TblPackageDetails.Add(new TblPackageDetail
                 {
                     PdDetailId = Guid.NewGuid(),
                     PdPackageId = service.SpPackageId,
-                    PdProductId = serviceGood.SgGoodsId,
-                    PdQuantity = serviceGood.SgQuantity
+                    PdProductId = packageDetail.PdProductId,
+                    PdQuantity = packageDetail.PdQuantity
                 });
 
-                service.SServiceCostPrice += good.PCostPrice * serviceGood.SgQuantity;
-                service.SServiceSellPrice += good.PSellingPrice * serviceGood.SgQuantity;
+                service.SServiceCostPrice += product.PCostPrice * packageDetail.PdQuantity;
+                service.SServiceSellPrice += product.PSellingPrice * packageDetail.PdQuantity;
             }
 
             await dbc.SaveChangesAsync();
@@ -153,7 +153,7 @@ namespace hotel_be.Controllers
         }
 
         [HttpDelete]
-        [Route("XoaTblService")]
+        [Route("XoaTblPackage")]
         public async Task<ActionResult> XoaTblService([FromQuery] Guid spPackageId)
         {
             var service = await dbc.TblServicePackages
@@ -162,15 +162,15 @@ namespace hotel_be.Controllers
 
             if (service == null)
             {
-                return NotFound("Service not found");
+                return NotFound("Package not found");
             }
 
-            // Remove TblPackageDeatil entries (foreign key)
+            // Remove table entries (foreign key)
             dbc.TblPackageDetails.RemoveRange(service.TblPackageDetails);
             dbc.TblServicePackages.Remove(service);
 
             await dbc.SaveChangesAsync();
-            return Ok(new { message = "Service deleted successfully" });
+            return Ok(new { message = "Package deleted successfully" });
         }
     }
 }

@@ -7,16 +7,16 @@ namespace hotel_be.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GoodController : ControllerBase
+    public class ProductController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-        public GoodController(DBCnhom4 dbc_in)
+        public ProductController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
         }
 
         [HttpGet]
-        [Route("GetGoodList")]
+        [Route("GetProductList")]
         public ActionResult Get()
         {
             return Ok(new { data = dbc.TblProducts.ToList() });
@@ -69,7 +69,7 @@ namespace hotel_be.Controllers
                 return NotFound("Good not found");
             }
 
-            // Remove TblServiceGood entries (foreign key)
+            // Remove table entries (foreign key)
             dbc.TblImportGoodsDetails.RemoveRange(good.TblImportGoodsDetails);
             dbc.TblProducts.Remove(good);
 

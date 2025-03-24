@@ -6,23 +6,23 @@ namespace hotel_be.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ServiceGoodController : ControllerBase
+    public class PackageDetailController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-        public ServiceGoodController(DBCnhom4 dbc_in)
+        public PackageDetailController(DBCnhom4 dbc_in)
         {
             dbc = dbc_in;
         }
 
         [HttpGet]
-        [Route("GetServiceGoodList")]
+        [Route("GetPackageDetailList")]
         public ActionResult Get()
         {
             return Ok(new { data = dbc.TblPackageDetails.ToList() });
         }
 
         [HttpGet]
-        [Route("SearchTblServiceGood")]
+        [Route("SearchTblPackageDetail")]
         public ActionResult TimKiem(string s)
         {
             var results = dbc.TblPackageDetails
@@ -35,7 +35,7 @@ namespace hotel_be.Controllers
         }
 
         [HttpPost]
-        [Route("InsertTblServiceGood")]
+        [Route("InsertTblPackageDetail")]
         public ActionResult Them(TblPackageDetail packageDetail)
         {
             dbc.TblPackageDetails.Add(packageDetail);
@@ -45,7 +45,7 @@ namespace hotel_be.Controllers
         }
 
         [HttpPut]
-        [Route("UpdateTblServiceGood")]
+        [Route("UpdateTblPackageDetail")]
         public ActionResult Sua(Guid pdDetailId, Guid pdPackageId, Guid pdProductId, int pdQuantity)
         {
             TblPackageDetail packageDetail = new TblPackageDetail
@@ -61,12 +61,12 @@ namespace hotel_be.Controllers
         }
 
         [HttpDelete]
-        [Route("XoaTblServiceGood")]
-        public ActionResult Xoa(Guid sgServiceGoodsId)
+        [Route("XoaTblPackageDetail")]
+        public ActionResult Xoa(Guid pdDetailId)
         {
             TblPackageDetail packageDetail = new TblPackageDetail
             {
-                PdDetailId = sgServiceGoodsId
+                PdDetailId = pdDetailId
             };
 
             dbc.TblPackageDetails.Remove(packageDetail);
