@@ -15,7 +15,7 @@ public partial class TblImportGoodsDetail
 
     public decimal IgdCostPrice { get; set; }
 
-    public virtual TblProduct IgdGoods { get; set; } = null!;
+    public virtual TblProduct? IgdGoods { get; set; }
 
-    public virtual TblImportGood IgdImport { get; set; } = null!;
+    public virtual TblImportGood? IgdImport { get; set; }
 }
