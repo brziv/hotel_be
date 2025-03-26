@@ -172,5 +172,45 @@ namespace hotel_be.Controllers
             await dbc.SaveChangesAsync();
             return Ok(new { message = "Package deleted successfully" });
         }
+
+        [HttpPost]
+        [Route("AddService")]
+        public IActionResult AddService(Guid BookingID, [FromBody] List<PackageDto> services)
+        {
+            foreach (var service in services)
+            {
+                dbc.Database.ExecuteSqlRaw("EXEC pro_edit_services {0}, {1}, {2}",
+                    BookingID, service.PackageId, service.Quantity);
+            }
+            return NoContent();
+        }
+        [HttpGet]
+        [Route("FindUsedService")]
+        public ActionResult FindUsedService(Guid bookingId)
+        {
+            var services = dbc.TblBookingServices
+                .Where(bs => bs.BsBookingId == bookingId)
+                .Include(bs => bs.BsService) // Lấy thông tin dịch vụ
+                    .ThenInclude(s => s.TblPackageDetails) // Lấy hàng hóa liên quan
+                        .ThenInclude(sg => sg.PdProduct) // Lấy thông tin hàng hóa
+                .GroupBy(bs => bs.BsServiceId) // Gộp các dịch vụ giống nhau
+                .Select(group => new UsedServiceGetDto
+                {
+                    SpPackageID = group.Key,
+                    SpPackageName = group.First().BsService.SpPackageName,
+                    SServiceSellPrice = group.First().BsService.TblPackageDetails.Sum(sg => sg.PdProduct.PSellingPrice * sg.PdQuantity),
+                    Quantity = group.Sum(bs => bs.BsQuantity), // Tổng số lượng của dịch vụ giống nhau
+                    ProductsInfo = string.Join("\n", group.First().BsService.TblPackageDetails
+                        .Select(sg => $"{sg.PdQuantity} {sg.PdProduct.PProductName}")),
+                    PackageDetails = group.First().BsService.TblPackageDetails.Select(sg => new PackageDetailDto
+                    {
+                        PdProductId = sg.PdProductId,
+                        PdQuantity = sg.PdQuantity
+                    }).ToList()
+                })
+                .ToList();
+
+            return Ok(new { data = services });
+        }
     }
 }

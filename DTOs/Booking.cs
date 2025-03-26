@@ -20,9 +20,4 @@
         public List<BookingRoomsDTO>? BRdto { get; set; }
     }
 
-    public class ServiceDto
-    {
-        public Guid ServiceID { get; set; }
-        public int Quantity { get; set; }
-    }
 }

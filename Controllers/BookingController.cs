@@ -96,7 +96,7 @@ namespace hotel_be.Controllers
             using (var cmd = dbc.Database.GetDbConnection().CreateCommand())
             {
                 cmd.CommandText = @"
-                    SELECT DISTINCT r.r_RoomNumber,b.b_BookingID,b.b_BookingStatus,b.b_TotalMoney,b.b_Deposit,g.g_FirstName,g.g_LastName,br_CheckInDate,br_CheckOutDate
+                    SELECT DISTINCT r.r_RoomNumber,b.b_BookingID,b.b_BookingStatus,b.b_TotalMoney,b.b_Deposit,g.g_FirstName,g.g_LastName,br_CheckInDate,br_CheckOutDate,r.r_PricePerHour
 			        FROM tbl_Bookings b
 			        JOIN tbl_BookingRooms br ON b.b_BookingID = br.br_BookingID
 			        JOIN tbl_Rooms r ON br.br_RoomID = r.r_RoomID
@@ -131,6 +131,7 @@ namespace hotel_be.Controllers
                         BookingStatus = row["b_BookingStatus"],
                         TotalMoney = row["b_TotalMoney"],
                         Deposit = row["b_Deposit"],
+                        Priceperhour = row["r_PricePerHour"]
                     }).ToList();
 
                     return Ok(new { bookings });
@@ -338,21 +339,10 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("Checkout")]
-        public IActionResult Checkout(Guid id, string paymethod)
+        public IActionResult Checkout(Guid id, string paymethod,decimal total)
         {
-            dbc.Database.ExecuteSqlRaw("EXEC pro_check_out {0}, {1}", id, paymethod);
-            return NoContent();
-        }
-
-        [HttpPost]
-        [Route("AddService")]
-        public IActionResult AddService(Guid BookingID, [FromBody] List<ServiceDto> services)
-        {
-            foreach (var service in services)
-            {
-                dbc.Database.ExecuteSqlRaw("EXEC pro_edit_services {0}, {1}, {2}",
-                    BookingID, service.ServiceID, service.Quantity);
-            }
+			decimal formattedTotal = Math.Round(total, 2);
+			dbc.Database.ExecuteSqlRaw("EXEC pro_check_out {0}, {1}, {2}", id, paymethod, total);
             return NoContent();
         }
     }
