@@ -49,6 +49,7 @@ namespace hotel_be.Controllers
             existingProduct.PCostPrice = updatedProduct.PCostPrice;
             existingProduct.PSellingPrice = updatedProduct.PSellingPrice;
             existingProduct.PCurrency = updatedProduct.PCurrency;
+            existingProduct.PIsService = updatedProduct.PIsService;
 
             dbc.TblProducts.Update(existingProduct);
             dbc.SaveChanges();
