@@ -19,5 +19,10 @@
         public decimal Deposit { get; set; }
         public List<BookingRoomsDTO>? BRdto { get; set; }
     }
-
+    public class CheckoutRequest
+    {
+        public Guid Id { get; set; }
+        public string PayMethod { get; set; }
+        public decimal Total { get; set; }
+    }
 }

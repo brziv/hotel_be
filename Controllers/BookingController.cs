@@ -1,4 +1,5 @@
-﻿using hotel_be.DTOs;
+﻿using Azure.Core;
+using hotel_be.DTOs;
 using hotel_be.ModelFromDB;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -339,10 +340,19 @@ namespace hotel_be.Controllers
 
         [HttpPost]
         [Route("Checkout")]
-        public IActionResult Checkout(Guid id, string paymethod,decimal total)
+        public IActionResult Checkout([FromBody] CheckoutRequest request)
         {
-			decimal formattedTotal = Math.Round(total, 2);
-			dbc.Database.ExecuteSqlRaw("EXEC pro_check_out {0}, {1}, {2}", id, paymethod, total);
+            decimal formattedTotal = Math.Round(request.Total, 2);
+            dbc.Database.ExecuteSqlRaw("EXEC pro_check_out {0}, {1}, {2}", request.Id, request.PayMethod, formattedTotal);
+            return NoContent();
+        }
+
+        [HttpPost]
+        [Route("Cancelbooking")]
+        public IActionResult Cancelbooking([FromBody] CheckoutRequest request)
+        {
+            decimal formattedTotal = Math.Round(request.Total, 2);
+            dbc.Database.ExecuteSqlRaw("EXEC pro_cancel_booking {0}, {1}, {2}", request.Id, request.PayMethod, formattedTotal);
             return NoContent();
         }
     }
