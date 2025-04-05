@@ -89,6 +89,37 @@ namespace hotel_be.Controllers
                 }
             }
         }
+        [HttpGet]
+        [Route("FindAllRooms")]
+        public IActionResult FindAllRooms(string floornum)
+        {
+            using (var cmd = dbc.Database.GetDbConnection().CreateCommand())
+            {
+                cmd.CommandText = @"
+            SELECT r.r_RoomNumber
+            FROM tbl_Rooms r
+            JOIN tbl_Floors f ON r.r_FloorID = f.f_FloorID
+            WHERE f.f_Floor = @floor
+            ORDER BY r.r_RoomNumber";
+                cmd.CommandType = CommandType.Text;
+
+                cmd.Parameters.Add(new SqlParameter("@floor", floornum));
+
+                dbc.Database.OpenConnection();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var dt = new DataTable();
+                    dt.Load(reader);
+
+                    var roomNumbers = dt.AsEnumerable()
+                                        .Select(row => row["r_RoomNumber"].ToString())
+                                        .ToList();
+
+                    return Ok(roomNumbers);
+                }
+            }
+        }
+
 
         [HttpGet]
         [Route("FindBookings")]
