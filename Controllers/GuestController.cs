@@ -79,8 +79,15 @@ namespace hotel_be.Controllers
                 return NotFound(new { message = "Guest not found" });
             }
 
-            dbc.TblGuests.Remove(guest);
-            dbc.SaveChanges();
+            try
+            {
+                dbc.TblGuests.Remove(guest);
+                dbc.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
 
             return Ok(new { data = guest });
         }

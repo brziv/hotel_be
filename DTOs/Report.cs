@@ -14,14 +14,6 @@
         public int Period { get; set; }
     }
 
-    public class OccupancyRateDto
-    {
-        public required string Floor { get; set; }
-        public int Period { get; set; }
-        public decimal TotalOccupiedRoomDays { get; set; }
-        public decimal OccupancyRate { get; set; }
-    }
-
     public class RoomTimelineDto
     {
         public string? RoomNumber { get; set; }

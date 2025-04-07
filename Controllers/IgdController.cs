@@ -96,62 +96,11 @@ namespace hotel_be.Controllers
             return Ok(new { data = details });
         }
 
-        [HttpGet]
-        [Route("SearchTblImportGoodsDetail")]
-        public ActionResult TimKiem(string s)
-        {
-            var results = dbc.TblImportGoodsDetails
-                .Where(item =>
-                    item.IgdQuantity.ToString().Contains(s) ||
-                    item.IgdCostPrice.ToString().Contains(s)
-                )
-                .ToList();
-
-            return Ok(new { data = results });
-        }
-
         [HttpPost]
         [Route("InsertTblImportGoodsDetail")]
         public ActionResult Them(TblImportGoodsDetail importGoodsDetail)
         {
             dbc.TblImportGoodsDetails.Add(importGoodsDetail);
-            dbc.SaveChanges();
-
-            return Ok(new { data = importGoodsDetail });
-        }
-
-        [HttpPut]
-        [Route("UpdateTblImportGoodsDetail")]
-        public ActionResult Sua([FromBody] TblImportGoodsDetail updatedImportGoodsDetail)
-        {
-            var existingImportGoodsDetail = dbc.TblImportGoodsDetails.Find(updatedImportGoodsDetail.IgdId);
-            if (existingImportGoodsDetail == null)
-            {
-                return NotFound(new { message = "Import goods detail not found" });
-            }
-
-            existingImportGoodsDetail.IgdImportId = updatedImportGoodsDetail.IgdImportId;
-            existingImportGoodsDetail.IgdGoodsId = updatedImportGoodsDetail.IgdGoodsId;
-            existingImportGoodsDetail.IgdQuantity = updatedImportGoodsDetail.IgdQuantity;
-            existingImportGoodsDetail.IgdCostPrice = updatedImportGoodsDetail.IgdCostPrice;
-
-            dbc.TblImportGoodsDetails.Update(existingImportGoodsDetail);
-            dbc.SaveChanges();
-
-            return Ok(new { data = existingImportGoodsDetail });
-        }
-
-        [HttpDelete]
-        [Route("XoaTblImportGoodsDetail")]
-        public ActionResult Xoa(Guid igdId)
-        {
-            var importGoodsDetail = dbc.TblImportGoodsDetails.Find(igdId);
-            if (importGoodsDetail == null)
-            {
-                return NotFound(new { message = "Import goods detail not found" });
-            }
-
-            dbc.TblImportGoodsDetails.Remove(importGoodsDetail);
             dbc.SaveChanges();
 
             return Ok(new { data = importGoodsDetail });

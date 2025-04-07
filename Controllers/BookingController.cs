@@ -5,43 +5,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Data;
+using hotel_be.Services;
 
 namespace hotel_be.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BookingController : ControllerBase
+    public class BookingController(DBCnhom4 dbc_in, ICustomCache cache) : ControllerBase
     {
-        private readonly DBCnhom4 dbc;
-        public BookingController(DBCnhom4 dbc_in)
-        {
-            dbc = dbc_in;
-        }
+        private readonly DBCnhom4 dbc = dbc_in;
+        private readonly ICustomCache _cache = cache;
 
         // GET Methods
-        [HttpGet]
-        [Route("GetBookingList")]
-        public ActionResult Get()
-        {
-            return Ok(new { data = dbc.TblBookings.ToList() });
-        }
-
-        [HttpGet]
-        [Route("SearchTblBooking")]
-        public ActionResult Search(string s)
-        {
-            var results = dbc.TblBookings
-                .Where(item =>
-                    item.BBookingStatus.Contains(s) ||
-                    (item.BTotalMoney.HasValue && item.BTotalMoney.Value.ToString().Contains(s)) ||
-                    (item.BDeposit.HasValue && item.BDeposit.Value.ToString().Contains(s)) ||
-                    (item.BCreatedAt.HasValue && item.BCreatedAt.Value.ToString().Contains(s)))
-                .ToList();
-
-            return Ok(new { data = results });
-        }
-
         [HttpGet]
         [Route("FindAvailableRooms")]
         public IActionResult FindAvailableRooms(DateTime indate, DateTime outdate, string floor)
@@ -53,7 +30,8 @@ namespace hotel_be.Controllers
                         SELECT DISTINCT br.br_RoomID
                         FROM tbl_Bookings b
                         JOIN tbl_BookingRooms br ON b.b_BookingID = br.br_BookingID
-                        WHERE (@CheckInDate < DATEADD(HOUR, 1, br.br_CheckOutDate) 
+	                    WHERE b.b_BookingStatus <> 'Cancelled'
+                        AND (@CheckInDate < DATEADD(HOUR, 1, br.br_CheckOutDate) 
                             AND @CheckOutDate > br.br_CheckInDate)
                     )
                     SELECT r.r_RoomID, r.r_RoomNumber, f.f_Floor, r.r_RoomType, r.r_PricePerHour
@@ -89,6 +67,7 @@ namespace hotel_be.Controllers
                 }
             }
         }
+
         [HttpGet]
         [Route("FindAllRooms")]
         public IActionResult FindAllRooms(string floornum)
@@ -120,31 +99,37 @@ namespace hotel_be.Controllers
             }
         }
 
-
         [HttpGet]
         [Route("FindBookings")]
         public IActionResult FindBookings(DateTime indate, DateTime outdate, string floornum)
         {
+            string cacheKey = $"bookings_{indate:yyyyMMddHHmm}_{outdate:yyyyMMddHHmm}_{floornum}";
+
+            if (_cache.TryGetValue(cacheKey, out List<object>? cachedBookings))
+            {
+                return Ok(new { bookings = cachedBookings });
+            }
+
             using (var cmd = dbc.Database.GetDbConnection().CreateCommand())
             {
                 cmd.CommandText = @"
                     SELECT DISTINCT r.r_RoomNumber,b.b_BookingID,b.b_BookingStatus,b.b_TotalMoney,b.b_Deposit,g.g_FirstName,g.g_LastName,br_CheckInDate,br_CheckOutDate,r.r_PricePerHour
-			        FROM tbl_Bookings b
-			        JOIN tbl_BookingRooms br ON b.b_BookingID = br.br_BookingID
-			        JOIN tbl_Rooms r ON br.br_RoomID = r.r_RoomID
-			        JOIN tbl_Floors f ON r.r_FloorID = f.f_FloorID
-			        JOIN tbl_Guests g On b.b_GuestID = g.g_GuestID
-			        WHERE 
-				        (@CheckInDate < br_CheckOutDate AND @CheckOutDate > br_CheckInDate)
-				        AND f.f_Floor = @Floor";
+                    FROM tbl_Bookings b
+                    JOIN tbl_BookingRooms br ON b.b_BookingID = br.br_BookingID
+                    JOIN tbl_Rooms r ON br.br_RoomID = r.r_RoomID
+                    JOIN tbl_Floors f ON r.r_FloorID = f.f_FloorID
+                    JOIN tbl_Guests g On b.b_GuestID = g.g_GuestID
+                    WHERE 
+                        (@CheckInDate < br_CheckOutDate AND @CheckOutDate > br_CheckInDate)
+                        AND f.f_Floor = @Floor";
                 cmd.CommandType = CommandType.Text;
 
                 cmd.Parameters.AddRange(new[]
                 {
-                    new SqlParameter("@CheckInDate", indate),
-                    new SqlParameter("@CheckOutDate", outdate),
-                    new SqlParameter("@Floor", floornum)
-                });
+            new SqlParameter("@CheckInDate", indate),
+            new SqlParameter("@CheckOutDate", outdate),
+            new SqlParameter("@Floor", floornum)
+        });
 
                 dbc.Database.OpenConnection();
                 using (var reader = cmd.ExecuteReader())
@@ -164,7 +149,9 @@ namespace hotel_be.Controllers
                         TotalMoney = row["b_TotalMoney"],
                         Deposit = row["b_Deposit"],
                         Priceperhour = row["r_PricePerHour"]
-                    }).ToList();
+                    }).ToList<object>();
+
+                    _cache.Set(cacheKey, bookings, TimeSpan.FromHours(1));
 
                     return Ok(new { bookings });
                 }
@@ -172,46 +159,6 @@ namespace hotel_be.Controllers
         }
 
         // POST Methods
-        [HttpPost]
-        [Route("InsertTblBooking")]
-        public ActionResult Insert(TblBooking booking)
-        {
-            dbc.TblBookings.Add(booking);
-            dbc.SaveChanges();
-            return Ok(new { data = booking });
-        }
-
-        [HttpPost]
-        [Route("UpdateTblBooking")]
-        public ActionResult Update(Guid bBookingId, [FromBody] TblBooking booking)
-        {
-            var existingBooking = dbc.TblBookings.Find(bBookingId);
-            if (existingBooking == null)
-                return NotFound();
-
-            existingBooking.BGuestId = booking.BGuestId;
-            existingBooking.BBookingStatus = booking.BBookingStatus;
-            existingBooking.BTotalMoney = booking.BTotalMoney;
-            existingBooking.BDeposit = booking.BDeposit;
-            existingBooking.BCreatedAt = booking.BCreatedAt;
-
-            dbc.SaveChanges();
-            return Ok(new { data = existingBooking });
-        }
-
-        [HttpPost]
-        [Route("DeleteTblBooking")]
-        public ActionResult Delete(Guid bBookingId)
-        {
-            var booking = dbc.TblBookings.Find(bBookingId);
-            if (booking == null)
-                return NotFound();
-
-            dbc.TblBookings.Remove(booking);
-            dbc.SaveChanges();
-            return Ok(new { data = booking });
-        }
-
         [HttpPost]
         [Route("AddGuest")]
         public IActionResult AddGuest(string firstname, string lastname, string email, string phonenum)
@@ -291,6 +238,7 @@ namespace hotel_be.Controllers
                     bb.BTotalMoney = totalMoney;
                     dbc.SaveChanges();
                     transaction.Commit();
+                    _cache.InvalidateBookingCache();
 
                     return Ok(new { message = "Booking successful!", bookingId = bb.BBookingId });
                 }
@@ -356,6 +304,7 @@ namespace hotel_be.Controllers
                 bb.BTotalMoney = totalMoney;
                 dbc.SaveChanges();
                 transaction.Commit();
+                _cache.InvalidateBookingCache();
 
                 return Ok(new { data = "Advance booking successful" });
             }
@@ -366,6 +315,7 @@ namespace hotel_be.Controllers
         public IActionResult Checkin(Guid id)
         {
             dbc.Database.ExecuteSqlRaw("EXEC pro_check_in {0}", id);
+            _cache.InvalidateBookingCache();
             return NoContent();
         }
 
@@ -374,7 +324,8 @@ namespace hotel_be.Controllers
         public IActionResult Checkout([FromBody] CheckoutRequest request)
         {
             decimal formattedTotal = Math.Round(request.Total, 2);
-            dbc.Database.ExecuteSqlRaw("EXEC pro_check_out {0}, {1}, {2}", request.Id, request.PayMethod, formattedTotal);
+            dbc.Database.ExecuteSql($"EXEC pro_check_out {request.Id}, {request.PayMethod}, {formattedTotal}");
+            _cache.InvalidateBookingCache();
             return NoContent();
         }
 
@@ -383,7 +334,8 @@ namespace hotel_be.Controllers
         public IActionResult Cancelbooking([FromBody] CheckoutRequest request)
         {
             decimal formattedTotal = Math.Round(request.Total, 2);
-            dbc.Database.ExecuteSqlRaw("EXEC pro_cancel_booking {0}, {1}, {2}", request.Id, request.PayMethod, formattedTotal);
+            dbc.Database.ExecuteSql($"EXEC pro_cancel_booking {request.Id}, {request.PayMethod}, {formattedTotal}");
+            _cache.InvalidateBookingCache();
             return NoContent();
         }
     }

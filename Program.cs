@@ -4,9 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Identity;
+using hotel_be.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-string Emuach = builder.Configuration.GetConnectionString("emuach");
+string? Emuach = builder.Configuration.GetConnectionString("emuach");
 builder.Services.AddDbContext<DBCnhom4>(options => options.UseSqlServer(Emuach));
 
 // Add Identity
@@ -23,6 +24,8 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 // JWT Configuration
 var skey = builder.Configuration["AppSettings:Key"];
+if (string.IsNullOrEmpty(skey))
+    throw new ArgumentException("Secret key cannot be null or empty", nameof(skey));
 var skeyBytes = Encoding.UTF8.GetBytes(skey);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -46,7 +49,10 @@ builder.Services.AddAuthorizationBuilder()
 
 // Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ICustomCache, CustomMemoryCache>();
+
+// Add other services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -73,6 +79,7 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }

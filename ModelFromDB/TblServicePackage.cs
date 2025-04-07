@@ -13,6 +13,8 @@ public partial class TblServicePackage
 
     public decimal SServiceSellPrice { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<TblBookingService> TblBookingServices { get; set; } = new List<TblBookingService>();
 
     public virtual ICollection<TblPackageDetail> TblPackageDetails { get; set; } = new List<TblPackageDetail>();

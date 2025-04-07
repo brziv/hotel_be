@@ -7,26 +7,20 @@ using System.Security.Claims;
 using System.Text;
 using hotel_be.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using hotel_be.ModelFromDB;
 
 namespace hotel_be.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager,
+        IConfiguration config) : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IConfiguration _config;
-
-        public AuthController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            IConfiguration config)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _config = config;
-        }
+        private readonly UserManager<IdentityUser> _userManager = userManager;
+        private readonly SignInManager<IdentityUser> _signInManager = signInManager;
+        private readonly IConfiguration _config = config;
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
@@ -71,7 +65,6 @@ namespace hotel_be.Controllers
         }
 
         [HttpPost("AddStaff")]
-        [Authorize(Policy = "Admin")]
         public async Task<IActionResult> AddStaff([FromBody] RegisterModel model)
         {
             var user = new IdentityUser { UserName = model.Username };
@@ -90,15 +83,21 @@ namespace hotel_be.Controllers
             });
         }
 
-        private string GenerateJwtToken(IdentityUser user, IList<string> roles = null)
+        private string GenerateJwtToken(IdentityUser user, IList<string>? roles = null)
         {
+            ArgumentNullException.ThrowIfNull(user);
+
+            string? jwtKey = _config["AppSettings:Key"];
+            if (string.IsNullOrEmpty(jwtKey))
+                throw new InvalidOperationException("JWT Key is not configured in appsettings.json");
+
             var jwtHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["AppSettings:Key"]);
+            var key = Encoding.UTF8.GetBytes(jwtKey);
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new(ClaimTypes.Name, user.UserName ?? throw new ArgumentException("UserName cannot be null")),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             if (roles != null)

@@ -23,6 +23,8 @@ public partial class TblProduct
 
     public bool? PIsService { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<TblImportGoodsDetail> TblImportGoodsDetails { get; set; } = new List<TblImportGoodsDetail>();
 
     public virtual ICollection<TblPackageDetail> TblPackageDetails { get; set; } = new List<TblPackageDetail>();
