@@ -116,13 +116,13 @@ namespace hotel_be.Controllers
         }
 
         [HttpGet]
-        [Route("GetBookingsByGuestId")]
+        [Route("GetConfirmedBookingsByGuestId")]
         public IActionResult GetBookingsByGuestId(Guid guestId)
         {
             var bookings = dbc.TblBookings
                 .Include(b => b.TblBookingRooms)
                     .ThenInclude(br => br.BrRoom)
-                .Where(b => b.BGuestId == guestId)
+                .Where(b => b.BGuestId == guestId && b.BBookingStatus == "Confirmed")
                 .OrderByDescending(b => b.BCreatedAt) // ⬅️ Sắp xếp giảm dần
                 .Select(b => new
                 {

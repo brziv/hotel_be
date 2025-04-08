@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Data;
 using hotel_be.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace hotel_be.Controllers
 {
@@ -151,7 +153,7 @@ namespace hotel_be.Controllers
                         Priceperhour = row["r_PricePerHour"]
                     }).ToList<object>();
 
-                    _cache.Set(cacheKey, bookings, TimeSpan.FromHours(1));
+                    _cache.Set(cacheKey, bookings, TimeSpan.FromMinutes(5));
 
                     return Ok(new { bookings });
                 }
@@ -337,6 +339,59 @@ namespace hotel_be.Controllers
             dbc.Database.ExecuteSql($"EXEC pro_cancel_booking {request.Id}, {request.PayMethod}, {formattedTotal}");
             _cache.InvalidateBookingCache();
             return NoContent();
+        }
+
+        [HttpGet("GetBookingsByUserId")]
+        public async Task<IActionResult> GetBookingsByUserId([FromQuery] string userId)
+        {
+            try
+            {
+                // Validate the input
+                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid guestId))
+                {
+                    return BadRequest("Invalid user ID format. Please provide a valid GUID.");
+                }
+
+                // Query bookings for the given guest ID with room info
+                var bookings = await dbc.TblBookings
+                    .Where(b => b.BGuestId == guestId)
+                    .Join(dbc.TblBookingRooms,
+                        b => b.BBookingId,
+                        br => br.BrBookingId,
+                        (b, br) => new { b, br }) // Intermediate anonymous object
+                    .Join(dbc.TblRooms,
+                        temp => temp.br.BrRoomId,
+                        r => r.RRoomId,
+                        (temp, r) => new
+                        {
+                            BookingID = temp.b.BBookingId,
+                            GuestID = temp.b.BGuestId,
+                            BookingStatus = temp.b.BBookingStatus,
+                            TotalMoney = temp.b.BTotalMoney,
+                            Deposit = temp.b.BDeposit,
+                            CreatedAt = temp.b.BCreatedAt,
+                            RoomID = temp.br.BrRoomId,
+                            RoomNumber = r.RRoomNumber,
+                            CheckInDate = temp.br.BrCheckInDate,
+                            CheckOutDate = temp.br.BrCheckOutDate
+                        })
+                    .ToListAsync();
+
+
+                // If no bookings found
+                if (bookings == null || !bookings.Any())
+                {
+                    return NotFound($"No bookings found for guest ID: {userId}");
+                }
+
+                // Return the bookings
+                return Ok(bookings);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (you might want to use a proper logging framework)
+                return StatusCode(500, $"An error occurred while retrieving bookings: {ex.Message}");
+            }
         }
     }
 }

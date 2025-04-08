@@ -1,6 +1,10 @@
 ﻿using hotel_be.ModelFromDB;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using hotel_be.DTOs;
 
 namespace hotel_be.Controllers
 {
@@ -19,6 +23,63 @@ namespace hotel_be.Controllers
         public ActionResult Get()
         {
             return Ok(new { data = dbc.TblEmployees.ToList() });
+        }
+
+        [HttpGet("GetEmployeesWithoutAccounts")]
+        public async Task<IActionResult> GetEmployeesWithoutAccounts()
+        {
+            try
+            {
+                var employees = await dbc.TblEmployees
+                    .Where(e => e.EUserId == null)
+                    .Select(e => new
+                    {
+                        eEmployeeId = e.EEmployeeId,
+                        eFirstName = e.EFirstName,
+                        eLastName = e.ELastName,
+                        eEmail = e.EEmail,
+                        ePhoneNumber = e.EPhoneNumber,
+                        ePosition = e.EPosition,
+                        eSalary = e.ESalary
+                    })
+                    .ToListAsync();
+
+                return Ok(new { code = 100, data = employees });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, msg = ex.Message });
+            }
+        }
+
+        [HttpGet("GetEmployeeByUserId")]
+        public async Task<IActionResult> GetEmployeeByUserId(Guid userId)
+        {
+            try
+            {
+                var employee = await dbc.TblEmployees
+                    .Where(e => e.EEmployeeId == userId)
+                    .Select(e => new
+                    {
+                        e.EEmployeeId,
+                        e.EFirstName,
+                        e.ELastName,
+                        e.EEmail,
+                        e.EPhoneNumber,
+                        e.EPosition,
+                        e.ESalary
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (employee == null)
+                    return NotFound(new { code = 404, msg = "Employee not found" });
+
+                return Ok(new { code = 100, data = employee });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, msg = $"Error retrieving employee: {ex.Message}" });
+            }
         }
 
         [HttpGet]
@@ -70,6 +131,37 @@ namespace hotel_be.Controllers
             dbc.SaveChanges();
 
             return Ok(new { data = existingEmployee });
+        }
+
+        [HttpPut("UpdateEmployeeProfile")]
+        public async Task<IActionResult> UpdateTblEmployee([FromBody] UpdateEmployeeDto model)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var employee = await dbc.TblEmployees
+                    .FirstOrDefaultAsync(e => e.EEmployeeId == model.EEmployeeId);
+
+                if (employee == null)
+                {
+                    return NotFound(new { code = 404, msg = "Employee not found" });
+                }
+
+                employee.EFirstName = model.EFirstName;
+                employee.ELastName = model.ELastName;
+                employee.EEmail = model.EEmail;
+                employee.EPhoneNumber = model.EPhoneNumber;
+                employee.EPosition = model.EPosition;
+                employee.ESalary = model.ESalary;
+
+                await dbc.SaveChangesAsync();
+
+                return Ok(new { code = 100, msg = "Profile updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, msg = ex.Message });
+            }
         }
 
         [HttpDelete]

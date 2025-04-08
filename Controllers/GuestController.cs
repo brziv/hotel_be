@@ -1,6 +1,10 @@
 ﻿using hotel_be.ModelFromDB;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using hotel_be.DTOs;
 
 namespace hotel_be.Controllers
 {
@@ -19,6 +23,36 @@ namespace hotel_be.Controllers
         public ActionResult Get()
         {
             return Ok(new { data = dbc.TblGuests.ToList() });
+        }
+
+        [HttpGet("GetGuestByUserId")]
+        public async Task<IActionResult> GetGuestByUsername(Guid userId)
+        {
+            try
+            {
+                var guest = await dbc.TblGuests
+                    .Where(g => g.GGuestId == userId)
+                    .Select(g => new
+                    {
+                        g.GGuestId,
+                        g.GFirstName,
+                        g.GLastName,
+                        g.GEmail,
+                        g.GPhoneNumber
+                    })
+                    .FirstOrDefaultAsync();
+
+                if (guest == null)
+                {
+                    return NotFound(new { code = 404, msg = "Guest not found" });
+                }
+
+                return Ok(new { code = 100, data = guest });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, msg = ex.Message });
+            }
         }
 
         [HttpGet]
@@ -66,6 +100,35 @@ namespace hotel_be.Controllers
             dbc.SaveChanges();
 
             return Ok(new { data = existingGuest });
+        }
+
+        [HttpPut("UpdateGuestProfile")]
+        public async Task<IActionResult> UpdateTblGuest([FromBody] UpdateGuestDto model)
+        {
+            try
+            {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var guest = await dbc.TblGuests
+                    .FirstOrDefaultAsync(g => g.GGuestId == model.GGuestId);
+
+                if (guest == null)
+                {
+                    return NotFound(new { code = 404, msg = "Guest not found" });
+                }
+
+                guest.GFirstName = model.GFirstName;
+                guest.GLastName = model.GLastName;
+                guest.GEmail = model.GEmail;
+                guest.GPhoneNumber = model.GPhoneNumber;
+
+                await dbc.SaveChangesAsync();
+
+                return Ok(new { code = 100, msg = "Profile updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = 500, msg = ex.Message });
+            }
         }
 
         [HttpDelete]

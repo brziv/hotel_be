@@ -167,6 +167,12 @@ public partial class DBCnhom4 : IdentityDbContext<IdentityUser>
             entity.Property(e => e.ESalary)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("e_Salary");
+            entity.Property(e => e.EUserId)
+                .HasColumnName("e_UserId");
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.EUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TblFloor>(entity =>
@@ -189,8 +195,6 @@ public partial class DBCnhom4 : IdentityDbContext<IdentityUser>
 
             entity.ToTable("tbl_Guests");
 
-            entity.HasIndex(e => e.GEmail, "UQ__tbl_Gues__317ADEF737721475").IsUnique();
-
             entity.Property(e => e.GGuestId)
                 .HasDefaultValueSql("(newid())")
                 .HasColumnName("g_GuestID");
@@ -206,6 +210,12 @@ public partial class DBCnhom4 : IdentityDbContext<IdentityUser>
             entity.Property(e => e.GPhoneNumber)
                 .HasMaxLength(15)
                 .HasColumnName("g_PhoneNumber");
+            entity.Property(e => e.GUserId)
+                .HasColumnName("g_UserId");
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.GUserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TblImportGood>(entity =>
