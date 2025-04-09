@@ -125,6 +125,7 @@ public partial class DBCnhom4 : IdentityDbContext<IdentityUser>
                 .HasColumnType("datetime")
                 .HasColumnName("bs_CreatedAt");
             entity.Property(e => e.BsQuantity).HasColumnName("bs_Quantity");
+            entity.Property(e => e.BsStatus).HasColumnName("bs_Status");
             entity.Property(e => e.BsServiceId).HasColumnName("bs_ServiceID");
 
             entity.HasOne(d => d.BsBooking).WithMany(p => p.TblBookingServices)
