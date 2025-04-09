@@ -15,6 +15,8 @@ public partial class TblBookingService
 
     public DateTime? BsCreatedAt { get; set; }
 
+    public string? BsStatus { get; set; }
+
     public virtual TblBooking BsBooking { get; set; } = null!;
 
     public virtual TblServicePackage BsService { get; set; } = null!;
