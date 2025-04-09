@@ -197,7 +197,31 @@ namespace hotel_be.Controllers
         {
             try
             {
-                var user = await _userManager.FindByNameAsync(model.UserName);
+                // Find the user by GGuestId or EEmployeeId
+                IdentityUser? user = null;
+
+                // Try to find guest first
+                var guest = await _dbContext.TblGuests
+                    .Include(g => g.User)
+                    .FirstOrDefaultAsync(g => g.GGuestId == model.UserId);
+
+                if (guest != null)
+                {
+                    user = guest.User;
+                }
+                else
+                {
+                    // If not found as guest, try employee
+                    var employee = await _dbContext.TblEmployees
+                        .Include(e => e.User)
+                        .FirstOrDefaultAsync(e => e.EEmployeeId == model.UserId);
+
+                    if (employee != null)
+                    {
+                        user = employee.User;
+                    }
+                }
+
                 if (user == null)
                 {
                     return NotFound(new { code = 404, msg = "User not found" });

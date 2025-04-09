@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using hotel_be.DTOs;
+using Microsoft.AspNetCore.Identity;
 
 namespace hotel_be.Controllers
 {
@@ -13,9 +14,11 @@ namespace hotel_be.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-        public EmployeeController(DBCnhom4 dbc_in)
+        private readonly UserManager<IdentityUser> _userManager;
+        public EmployeeController(DBCnhom4 dbc_in, UserManager<IdentityUser> userManager)
         {
             dbc = dbc_in;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -166,19 +169,42 @@ namespace hotel_be.Controllers
 
         [HttpDelete]
         [Route("XoaTblEmployee")]
-        public ActionResult Xoa(Guid eEmployeeId)
+        public async Task<ActionResult> Xoa(Guid eEmployeeId)
         {
-            var employee = dbc.TblEmployees.Find(eEmployeeId);
-
-            if (employee == null)
+            try
             {
-                return NotFound(new { message = "Employee not found" });
+                // Find the employee including the linked User
+                var employee = await dbc.TblEmployees
+                    .Include(e => e.User)
+                    .FirstOrDefaultAsync(e => e.EEmployeeId == eEmployeeId);
+
+                if (employee == null)
+                {
+                    return NotFound(new { message = "Employee not found" });
+                }
+
+                // Check if there's a linked user account
+                if (employee.User != null)
+                {
+                    // Delete the IdentityUser account
+                    var userDeleteResult = await _userManager.DeleteAsync(employee.User);
+                    if (!userDeleteResult.Succeeded)
+                    {
+                        var errors = string.Join("; ", userDeleteResult.Errors.Select(e => e.Description));
+                        return BadRequest(new { message = $"Failed to delete user account: {errors}" });
+                    }
+                }
+
+                // Delete the employee record
+                dbc.TblEmployees.Remove(employee);
+                await dbc.SaveChangesAsync();
+
+                return Ok(new { data = employee });
             }
-
-            dbc.TblEmployees.Remove(employee);
-            dbc.SaveChanges();
-
-            return Ok(new { data = employee });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred: {ex.Message}" });
+            }
         }
     }
 }

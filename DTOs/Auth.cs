@@ -23,7 +23,7 @@
 
     public class ChangePasswordDto
     {
-        public required string UserName { get; set; }
+        public required Guid UserId { get; set; }
         public required string CurrentPassword { get; set; }
         public required string NewPassword { get; set; }
     }

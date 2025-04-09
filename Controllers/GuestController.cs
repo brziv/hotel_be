@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using hotel_be.DTOs;
+using Microsoft.AspNetCore.Identity;
 
 namespace hotel_be.Controllers
 {
@@ -13,9 +14,11 @@ namespace hotel_be.Controllers
     public class GuestController : ControllerBase
     {
         private readonly DBCnhom4 dbc;
-        public GuestController(DBCnhom4 dbc_in)
+        private readonly UserManager<IdentityUser> _userManager;
+        public GuestController(DBCnhom4 dbc_in, UserManager<IdentityUser> userManager)
         {
             dbc = dbc_in;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -133,26 +136,42 @@ namespace hotel_be.Controllers
 
         [HttpDelete]
         [Route("XoaTblGuest")]
-        public ActionResult Xoa(Guid gGuestId)
+        public async Task<ActionResult> Xoa(Guid gGuestId)
         {
-            var guest = dbc.TblGuests.Find(gGuestId);
-
-            if (guest == null)
-            {
-                return NotFound(new { message = "Guest not found" });
-            }
-
             try
             {
+                // Find the guest including the linked User
+                var guest = await dbc.TblGuests
+                    .Include(g => g.User)
+                    .FirstOrDefaultAsync(g => g.GGuestId == gGuestId);
+
+                if (guest == null)
+                {
+                    return NotFound(new { message = "Guest not found" });
+                }
+
+                // Check if there's a linked user account
+                if (guest.User != null)
+                {
+                    // Delete the IdentityUser account
+                    var userDeleteResult = await _userManager.DeleteAsync(guest.User);
+                    if (!userDeleteResult.Succeeded)
+                    {
+                        var errors = string.Join("; ", userDeleteResult.Errors.Select(e => e.Description));
+                        return BadRequest(new { message = $"Failed to delete user account: {errors}" });
+                    }
+                }
+
+                // Delete the guest record
                 dbc.TblGuests.Remove(guest);
-                dbc.SaveChanges();
+                await dbc.SaveChangesAsync();
+
+                return Ok(new { data = guest });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return StatusCode(500, new { message = $"An error occurred: {ex.Message}" });
             }
-
-            return Ok(new { data = guest });
         }
     }
 }
