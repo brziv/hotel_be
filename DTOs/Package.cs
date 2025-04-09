@@ -39,4 +39,11 @@
         public Guid PdProductId { get; set; }
         public int PdQuantity { get; set; }
     }
+    public class ApproveServiceRequestDto
+    {
+        public Guid BookingId { get; set; }
+        public decimal TotalAmount { get; set; }
+        public List<Guid> BookingServiceIds { get; set; } = new List<Guid>();
+    }
+
 }

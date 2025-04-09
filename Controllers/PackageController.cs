@@ -164,5 +164,101 @@ namespace hotel_be.Controllers
 
             return Ok(new { data = services });
         }
+        [HttpGet]
+        [Route("FindServiceRequest")]
+        public ActionResult FindServiceRequest()
+        {
+            // Lấy dữ liệu các dịch vụ đã đặt trong booking đã xác nhận
+            var serviceRequests = (from booking in dbc.TblBookings
+                                   where booking.BBookingStatus == "Confirmed"
+                                   join guest in dbc.TblGuests on booking.BGuestId equals guest.GGuestId
+                                   join bookingService in dbc.TblBookingServices on booking.BBookingId equals bookingService.BsBookingId
+                                   join servicePackage in dbc.TblServicePackages on bookingService.BsServiceId equals servicePackage.SpPackageId
+                                   join bookingRoom in dbc.TblBookingRooms on booking.BBookingId equals bookingRoom.BrBookingId
+                                   join room in dbc.TblRooms on bookingRoom.BrRoomId equals room.RRoomId
+                                   select new
+                                   {
+                                       BookingId = booking.BBookingId,
+                                       CustomerName = guest.GFirstName + " " + guest.GLastName,
+                                       RoomNumber = room.RRoomNumber,
+                                       ServiceName = servicePackage.SpPackageName,
+                                       Quantity = bookingService.BsQuantity,
+                                       CreatedAt = bookingService.BsCreatedAt,
+                                       Status = bookingService.BsStatus,
+                                       BsId = bookingService.BsId,
+                                       ServiceCostPrice = servicePackage.SServiceCostPrice,
+                                       ServiceSellPrice = servicePackage.SServiceSellPrice
+                                   }).Where(x => x.CreatedAt.HasValue)
+                                     .ToList();
+
+            // Group theo CreatedAt đầy đủ (ngày + giờ)
+            var result = serviceRequests
+                .GroupBy(sr => sr.CreatedAt.Value)
+                .Select(group => new
+                {
+                    CreatedAt = group.Key.ToString("HH:mm:ss - dd/MM/yyyy"),
+                    CustomerName = group.First().CustomerName,
+                    Room = string.Join("-", group.Select(g => g.RoomNumber).Distinct()),
+                    Status = group.First().Status,
+                    BookingId = group.First().BookingId,
+
+                    ServiceList = group
+                        .GroupBy(g => g.ServiceName)
+                        .Select(sg => new
+                        {
+                            ServiceName = sg.Key,
+                            Quantity = sg.Sum(s => s.Quantity),
+                            BookingServiceIds = sg.Select(s => s.BsId).ToList(),
+                            ServiceCostPrice = sg.First().ServiceCostPrice,
+                            ServiceSellPrice = sg.First().ServiceSellPrice,
+                            TotalSellPrice = sg.First().ServiceSellPrice * sg.Sum(s => s.Quantity)
+                        }).ToList(),
+
+                    TotalAmount = group.Sum(g => g.ServiceSellPrice * g.Quantity)
+                })
+                .OrderByDescending(g => g.CreatedAt)
+                .ToList();
+
+            return Ok(new { data = result });
+        }
+
+
+        [HttpPut]
+        [Route("ApproveServiceRequest")]
+        public ActionResult ApproveServiceRequest([FromBody] ApproveServiceRequestDto request)
+        {
+            try
+            {
+                // Tìm Booking theo ID
+                var booking = dbc.TblBookings.Find(request.BookingId);
+                if (booking == null)
+                {
+                    return NotFound(new { message = "Booking not found" });
+                }
+
+                // Cộng thêm tiền vào BTotalMoney
+                booking.BTotalMoney = (booking.BTotalMoney ?? 0) + request.TotalAmount;
+
+                // Lặp qua danh sách BookingServiceIds để cập nhật trạng thái
+                foreach (var bsId in request.BookingServiceIds)
+                {
+                    var bookingService = dbc.TblBookingServices.Find(bsId);
+                    if (bookingService != null && bookingService.BsBookingId == request.BookingId)
+                    {
+                        bookingService.BsStatus = "Confirmed";
+                    }
+                }
+
+                // Lưu thay đổi vào database
+                dbc.SaveChanges();
+
+                return Ok(new { message = "Booking and services updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred", error = ex.Message });
+            }
+        }
+
     }
 }
