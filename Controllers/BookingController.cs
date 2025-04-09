@@ -107,10 +107,10 @@ namespace hotel_be.Controllers
         {
             string cacheKey = $"bookings_{indate:yyyyMMddHHmm}_{outdate:yyyyMMddHHmm}_{floornum}";
 
-            if (_cache.TryGetValue(cacheKey, out List<object>? cachedBookings))
-            {
-                return Ok(new { bookings = cachedBookings });
-            }
+            //if (_cache.TryGetValue(cacheKey, out List<object>? cachedBookings))
+            //{
+            //    return Ok(new { bookings = cachedBookings });
+            //}
 
             using (var cmd = dbc.Database.GetDbConnection().CreateCommand())
             {
@@ -153,7 +153,7 @@ namespace hotel_be.Controllers
                         Priceperhour = row["r_PricePerHour"]
                     }).ToList<object>();
 
-                    _cache.Set(cacheKey, bookings, TimeSpan.FromMinutes(5));
+                    //_cache.Set(cacheKey, bookings, TimeSpan.FromMinutes(1));
 
                     return Ok(new { bookings });
                 }
